@@ -1,3 +1,7 @@
+"""
+N+1 일날 퇴사하고, N 일까지 일하는 개념에 대해 헷갈렸을때 풀었던 방식
+"""
+
 import sys
 
 N = int(sys.stdin.readline().strip())
