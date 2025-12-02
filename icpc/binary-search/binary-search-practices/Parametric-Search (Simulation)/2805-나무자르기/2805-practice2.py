@@ -21,4 +21,4 @@ while left <= right:
     else:
         right = mid-1 ## M개에 도달하지 못했다. 현재 나무의 길이가 너무 크다는 이야기다.
 
-print(right)
+print(right) ## 나무를 최소로 잘라야 한다.
