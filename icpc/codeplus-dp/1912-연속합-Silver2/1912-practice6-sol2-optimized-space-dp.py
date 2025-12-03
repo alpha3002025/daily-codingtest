@@ -8,7 +8,6 @@ curr_sum = A[0]
 max_sum = A[0]
 
 for i in range(1, N):
-    #          max(연속 x, 연속 o)
     curr_sum = max(A[i], curr_sum + A[i])
     max_sum = max(max_sum, curr_sum)
 
