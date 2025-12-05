@@ -1,22 +1,22 @@
 import sys
-sys.setrecursionlimit(10**6)
 input = sys.stdin.readline
 
 N = int(input())
 memo = [-1] * (N+1)
+memo[0] = 0
 
 def backtracking(curr):
     if memo[curr] != -1:
         return memo[curr]
     
-    result = curr
-
+    total_cnt = curr
     j=1
     while j*j <= curr:
-        result = min(result, backtracking(curr - j*j)+1)
+        total_cnt = min(total_cnt, backtracking(curr - j*j) + 1)
         j+=1
     
-    memo[curr] = result
+    memo[curr] = total_cnt
     return memo[curr]
 
-print(backtracking(N))
+result = backtracking(N)
+print(result)
