@@ -1,6 +1,10 @@
 import sys
 from collections import defaultdict
 
+"""
+이분탐색x -> 해시
+"""
+
 M, N = map(int, sys.stdin.readline().split())
 universe = defaultdict(int)
 
