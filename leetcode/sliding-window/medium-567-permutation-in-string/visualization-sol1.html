@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Window Visualization (LeetCode 567)</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --window-border: #f472b6;
+            --match-color: #4ade80;
+            --remove-color: #ef4444;
+            --add-color: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(to right, var(--accent), var(--window-border));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Controls Section */
+        .controls-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            font-weight: 600;
+        }
+
+        input {
+            background-color: var(--bg-color);
+            border: 1px solid var(--text-sub);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+
+        button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--text-sub);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-reset {
+            background-color: var(--remove-color);
+            color: white;
+        }
+
+        /* Visualization Area */
+        .viz-area {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        /* String Display */
+        .string-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+            overflow-x: auto;
+        }
+
+        .char-box {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 0 2px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* The Moving Window */
+        .window-overlay {
+            position: absolute;
+            height: 50px;
+            /* adjusted for centering */
+            border: 3px solid var(--window-border);
+            border-radius: 8px;
+            top: -5px;
+            /* Pull up to center over char-box */
+            left: 0;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.3s;
+            pointer-events: none;
+            z-index: 2;
+            box-shadow: 0 0 15px rgba(244, 114, 182, 0.3);
+            background: rgba(244, 114, 182, 0.05);
+        }
+
+        /* Maps Comparison */
+        .maps-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .map-card {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .map-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .counter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            min-height: 50px;
+        }
+
+        .count-item {
+            background: #334155;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-family: monospace;
+            display: flex;
+            gap: 8px;
+            border: 1px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .count-item span.char {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .count-item span.val {
+            color: white;
+        }
+
+        /* Animation classes for map items */
+        .changed-up {
+            animation: flash-green 0.5s;
+            border-color: var(--add-color);
+        }
+
+        .changed-down {
+            animation: flash-red 0.5s;
+            border-color: var(--remove-color);
+        }
+
+        @keyframes flash-green {
+            0% {
+                background-color: var(--add-color);
+            }
+
+            100% {
+                background-color: #334155;
+            }
+        }
+
+        @keyframes flash-red {
+            0% {
+                background-color: var(--remove-color);
+            }
+
+            100% {
+                background-color: #334155;
+            }
+        }
+
+        /* Status and Logs */
+        .status-box {
+            text-align: center;
+            font-size: 1.1rem;
+            min-height: 1.5rem;
+            font-weight: bold;
+        }
+
+        .status-match {
+            color: var(--match-color);
+        }
+
+        .status-nomatch {
+            color: var(--text-sub);
+        }
+
+        .log-box {
+            background-color: #000;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #d1d5db;
+            height: 120px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 2px;
+        }
+
+        .highlight {
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Sliding Window Visualization</h1>
+
+    <div class="container">
+        <!-- Controls -->
+        <div class="controls-card">
+            <div class="input-group">
+                <label>s1 (Pattern)</label>
+                <input type="text" id="s1-input" value="ab" maxlength="10">
+            </div>
+            <div class="input-group">
+                <label>s2 (Search String)</label>
+                <input type="text" id="s2-input" value="eidbaooo" maxlength="20">
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="init()">Reset/Start</button>
+                <button class="btn-secondary" onclick="prevStep()" id="btn-prev" disabled>Prev</button>
+                <button class="btn-secondary" onclick="nextStep()" id="btn-next" disabled>Step</button>
+                <button class="btn-secondary" onclick="nextIteration()" id="btn-iter" disabled>Next Loop</button>
+                <button class="btn-secondary" onclick="toggleAuto()" id="btn-auto" disabled>Auto Play</button>
+            </div>
+        </div>
+
+        <!-- Visualization -->
+        <div class="viz-area">
+
+            <div class="status-box" id="main-status">Click 'Reset/Start' to begin</div>
+
+            <div class="string-container" id="s2-container">
+                <!-- Wrapper for correct positioning -->
+                <div id="str-wrapper" style="position: relative; display: inline-flex;">
+                    <div class="window-overlay" id="window-box"></div>
+                    <!-- char boxes go here inside wrapper -->
+                </div>
+            </div>
+
+            <div class="maps-grid">
+                <div class="map-card">
+                    <div class="map-title">s1 Map (Reference)</div>
+                    <div class="counter-container" id="s1-map-display"></div>
+                </div>
+                <div class="map-card">
+                    <div class="map-title">Window Map (Current)</div>
+                    <div class="counter-container" id="window-map-display"></div>
+                </div>
+            </div>
+
+            <div class="log-box" id="log-console">
+                <!-- Logs go here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Variables
+        let s1 = "";
+        let s2 = "";
+        let s1Map = new Array(26).fill(0);
+        let windowMap = new Array(26).fill(0);
+        let windowSize = 0;
+        let left = 0;
+        let right = 0; // Exclusive in loop logic, implies next char to add
+        let step = 0; // 0: uninit, 1: init window, 2: compare, 3: slide...
+        let autoInterval = null;
+        let isMatch = false;
+
+        // History Stack for Prev functionality
+        let historyStack = [];
+
+        const CHAR_BOX_WIDTH = 44; // width + margin
+        const OFFSET_LEFT = -2; // adjustment
+
+        // DOM Elements
+        const strWrapper = document.getElementById('str-wrapper');
+        const windowBox = document.getElementById('window-box');
+        const s1Display = document.getElementById('s1-map-display');
+        const wDisplay = document.getElementById('window-map-display');
+        const logConsole = document.getElementById('log-console');
+        const mainStatus = document.getElementById('main-status');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const btnIter = document.getElementById('btn-iter');
+        const btnAuto = document.getElementById('btn-auto');
+
+        function log(msg) {
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            div.innerHTML = `> ${msg}`;
+            logConsole.prepend(div);
+        }
+
+        function getOrd(char) {
+            return char.charCodeAt(0) - 97; // 'a' is 0
+        }
+
+        function getChar(ord) {
+            return String.fromCharCode(ord + 97);
+        }
+
+        function renderMaps(highlightCharIndex = -1, type = 'none') {
+            // Render S1
+            s1Display.innerHTML = '';
+            for (let i = 0; i < 26; i++) {
+                if (s1Map[i] > 0) {
+                    s1Display.innerHTML += `<div class="count-item"><span class="char">${getChar(i)}</span><span class="val">${s1Map[i]}</span></div>`;
+                }
+            }
+
+            // Render Window
+            wDisplay.innerHTML = '';
+            for (let i = 0; i < 26; i++) {
+                if (windowMap[i] > 0) {
+                    let className = 'count-item';
+                    if (i === highlightCharIndex) {
+                        className += type === 'add' ? ' changed-up' : ' changed-down';
+                    }
+                    wDisplay.innerHTML += `<div class="${className}"><span class="char">${getChar(i)}</span><span class="val">${windowMap[i]}</span></div>`;
+                }
+            }
+        }
+
+        function arraysEqual(a, b) {
+            for (let i = 0; i < 26; i++) {
+                if (a[i] !== b[i]) return false;
+            }
+            return true;
+        }
+
+        function init() {
+            // Stop auto if running
+            if (autoInterval) clearInterval(autoInterval);
+
+            s1 = document.getElementById('s1-input').value.toLowerCase();
+            s2 = document.getElementById('s2-input').value.toLowerCase();
+
+            if (s1.length > s2.length) {
+                alert("s1 cannot be longer than s2");
+                return;
+            }
+
+            // Reset Internal State
+            s1Map.fill(0);
+            windowMap.fill(0);
+            left = 0;
+            right = 0;
+            windowSize = s1.length;
+            step = 1;
+            isMatch = false;
+            historyStack = []; // Reset history
+
+            // Build S1 Map
+            for (let char of s1) {
+                s1Map[getOrd(char)]++;
+            }
+
+            // Generate DOM for s2
+            // Clean wrapper but keep window-box
+            strWrapper.innerHTML = '';
+            strWrapper.appendChild(windowBox);
+
+            for (let char of s2) {
+                const box = document.createElement('div');
+                box.className = 'char-box';
+                box.innerText = char;
+                strWrapper.appendChild(box);
+            }
+
+            // Reset Window Position
+            windowBox.style.width = `${windowSize * CHAR_BOX_WIDTH}px`;
+            windowBox.style.transform = `translateX(0px)`;
+            windowBox.style.borderColor = "var(--window-border)";
+            windowBox.style.boxShadow = "0 0 15px rgba(244, 114, 182, 0.3)";
+
+            // UI Reset
+            logConsole.innerHTML = '';
+            mainStatus.className = 'status-box';
+            mainStatus.innerText = 'Ready to initialize window...';
+            btnPrev.disabled = true;
+            btnNext.disabled = false;
+            btnIter.disabled = false;
+            btnAuto.disabled = false;
+            btnNext.innerText = "Initialize";
+
+            renderMaps();
+            log(`Initialized. s1 len: ${s1.length}, s2 len: ${s2.length}`);
+        }
+
+        function updateWindowVisual() {
+            // Calculate pixel position
+            const px = left * CHAR_BOX_WIDTH;
+            windowBox.style.transform = `translateX(${px}px)`;
+        }
+
+        // --- History / State Management ---
+        function saveState() {
+            const state = {
+                left: left,
+                right: right,
+                step: step,
+                // Deep copy windowMap
+                windowMap: [...windowMap],
+                isMatch: isMatch,
+                statusText: mainStatus.innerHTML,
+                statusClass: mainStatus.className,
+                btnNextText: btnNext.innerText,
+                windowBorder: windowBox.style.borderColor,
+                windowShadow: windowBox.style.boxShadow,
+                logHtml: logConsole.innerHTML // Saving logs is expensive but easiest for accurate restore
+            };
+            historyStack.push(state);
+            btnPrev.disabled = false;
+        }
+
+        function prevStep() {
+            if (historyStack.length === 0) return;
+
+            const state = historyStack.pop();
+
+            // Restore functionality variables
+            left = state.left;
+            right = state.right;
+            step = state.step;
+            windowMap = state.windowMap;
+            isMatch = state.isMatch;
+
+            // Restore UI
+            mainStatus.innerHTML = state.statusText;
+            mainStatus.className = state.statusClass;
+            btnNext.innerText = state.btnNextText;
+            windowBox.style.borderColor = state.windowBorder;
+            windowBox.style.boxShadow = state.windowShadow;
+            logConsole.innerHTML = state.logHtml;
+
+            // Update visual components dependent on variables
+            updateWindowVisual();
+            renderMaps();
+
+            // Manage buttons
+            if (historyStack.length === 0) btnPrev.disabled = true;
+            if (!isMatch && step !== 4) {
+                btnNext.disabled = false;
+                btnIter.disabled = false;
+                btnAuto.disabled = false;
+            }
+
+            // Stop auto play if we manually go back
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+                btnAuto.innerText = "Auto Play";
+            }
+        }
+
+        function nextIteration() {
+            // Run steps until we reach the start of a Compare phase (step 2)
+            // or we finish.
+
+            // If currently at init (1), run once to get to Compare (2)
+            if (step === 1) {
+                nextStep();
+                return;
+            }
+
+            // If finished, do nothing
+            if (isMatch || step === 4) return;
+
+            // We want to complete one FULL check-then-slide cycle.
+            // Cycle: Compare (2) -> [Slide (3) -> Compare (2)]
+
+            // If we are already at Slide(3), run once to get to Compare(2).
+            if (step === 3) {
+                nextStep();
+            } else if (step === 2) {
+                nextStep(); // Do Compare
+                if (!isMatch && step === 3) {
+                    // small delay for visual or instant? Instant for "Next Loop"
+                    setTimeout(() => nextStep(), 150);
+                }
+            }
+        }
+
+        function nextStep() {
+            if (isMatch) {
+                log("Already found a match. Reset to restart.");
+                return;
+            }
+            if (right > s2.length && step !== 4) { // Added step !== 4 to allow final step 4 processing
+                log("End of string reached.");
+                mainStatus.innerText = "Finished: No Permutation Found.";
+                btnNext.disabled = true;
+                btnIter.disabled = true;
+                btnAuto.disabled = true;
+                btnPrev.disabled = false; // Allow going back from finished state
+                return;
+            }
+
+            // SAVE STATE before modification
+            saveState();
+
+            // STEP 1: Initialization Loop (filling first window)
+            if (step === 1) {
+                mainStatus.innerText = "Initializing first window...";
+
+                // We fill the entire first window at once for brevity, or step by step?
+                // Let's do logical block at once to match Python's pre-loop phase
+                for (let i = 0; i < windowSize; i++) {
+                    windowMap[getOrd(s2[i])]++;
+                }
+
+                renderMaps();
+                log(`Filled initial window [0...${windowSize - 1}]: "${s2.substring(0, windowSize)}"`);
+                right = windowSize;
+                step = 2; // Next is Compare
+                btnNext.innerText = "Check Match";
+                return;
+            }
+
+            // STEP 2: Check Logic
+            if (step === 2) {
+                const match = arraysEqual(s1Map, windowMap);
+                const currentStr = s2.substring(left, left + windowSize);
+
+                if (match) {
+                    mainStatus.innerHTML = `<span class="status-match">FOUND MATCH!</span> Window: "${currentStr}"`;
+                    mainStatus.className = 'status-box status-match';
+                    windowBox.style.borderColor = "var(--match-color)";
+                    windowBox.style.boxShadow = "0 0 20px var(--match-color)";
+                    log(`MATCH FOUND at index ${left}!`);
+                    isMatch = true;
+                    if (autoInterval) clearInterval(autoInterval);
+                } else {
+                    mainStatus.innerHTML = `<span class="status-nomatch">No Match</span>. Window: "${currentStr}"`;
+                    step = 3; // Next is Slide
+                    btnNext.innerText = "Slide Window";
+                    log(`No match for window at ${left}.`);
+
+                    // Check if we can slide further
+                    if (right >= s2.length) {
+                        step = 4; // Finish
+                    }
+                }
+                return;
+            }
+
+            // STEP 3: Slide (Add right, Remove left)
+            if (step === 3) {
+                if (right >= s2.length) {
+                    step = 4; // finish
+                    nextStep(); // Recurse to hit the step 4 block and finish logic
+                    return;
+                }
+
+                const charIn = s2[right];
+                const charOut = s2[left];
+
+                log(`Sliding: Remove <span class="highlight">${charOut}</span>, Add <span class="highlight">${charIn}</span>`);
+
+                // Update Map
+                windowMap[getOrd(charIn)]++;
+                windowMap[getOrd(charOut)]--;
+
+                // Visual Update Logic
+                // We can't render both add/remove animations easily on one frame without logic,
+                // but let's just render the map.
+                renderMaps(getOrd(charIn), 'add');
+
+                // Move Pointers
+                left++;
+                right++;
+
+                updateWindowVisual();
+
+                step = 2; // Back to Compare
+                btnNext.innerText = "Check Match";
+                return;
+            }
+
+            // FINISH
+            if (step === 4) {
+                log("End of string reached. No permutation found.");
+                mainStatus.innerText = "Finished: False";
+                btnNext.disabled = true;
+                btnIter.disabled = true;
+                btnAuto.disabled = true;
+            }
+        }
+
+        function toggleAuto() {
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+                btnAuto.innerText = "Auto Play";
+            } else {
+                if (isMatch || step === 4) return;
+                autoInterval = setInterval(nextStep, 1000);
+                btnAuto.innerText = "Stop";
+            }
+        }
+
+        // Run init on load
+        window.onload = init;
+
+    </script>
+</body>
+
+</html>
