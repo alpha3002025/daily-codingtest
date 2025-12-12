@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocean View (Monotonic Stack) Visualization</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --building-color: #64748b;
+            --building-active: #f472b6;
+            --building-ocean: #4ade80;
+            --stack-color: #a855f7;
+            --ocean-bg: #0c4a6e;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            background: linear-gradient(to right, var(--accent), var(--stack-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Controls */
+        .controls-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+        input {
+            background-color: var(--bg-color);
+            border: 1px solid var(--text-sub);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            background-color: var(--card-bg);
+            border: 1px solid var(--text-sub);
+            color: var(--text-main);
+        }
+
+        button:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--accent-hover);
+        }
+
+        /* Visualization Area */
+        .viz-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .viz-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .viz-panel {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            color: var(--text-sub);
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Buildings */
+        .city-scape {
+            flex-grow: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            /* Right side is ocean */
+            gap: 4px;
+            /* Reduced gap */
+            padding: 20px 60px 20px 20px;
+            /* Right padding for ocean text */
+            position: relative;
+            background: linear-gradient(to right, transparent 90%, var(--ocean-bg) 100%);
+            border-radius: 8px;
+            overflow-x: auto;
+            min-height: 250px;
+        }
+
+        .ocean-label {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%) rotate(90deg);
+            color: var(--accent);
+            font-weight: bold;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+        }
+
+        .building-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 40px;
+        }
+
+        .building {
+            width: 100%;
+            background-color: var(--building-color);
+            transition: all 0.3s ease;
+            position: relative;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+
+        .building-val {
+            position: absolute;
+            top: -20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--text-sub);
+        }
+
+        .building-idx {
+            margin-top: 5px;
+            font-size: 0.75rem;
+            color: var(--text-sub);
+        }
+
+        /* States */
+        .building.active {
+            background-color: var(--building-active);
+            box-shadow: 0 0 10px var(--building-active);
+        }
+
+        .building.ocean-view {
+            background-color: var(--building-ocean);
+            box-shadow: 0 0 10px var(--building-ocean);
+        }
+
+        .building.blocked {
+            opacity: 0.4;
+        }
+
+        /* Optional: dim blocked ones? */
+
+        /* Stack */
+        .stack-container {
+            display: flex;
+            flex-direction: column-reverse;
+            /* Bottom is bottom */
+            align-items: center;
+            justify-content: flex-start;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            flex-grow: 1;
+            gap: 5px;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .stack-item {
+            width: 80%;
+            padding: 10px;
+            background-color: var(--stack-color);
+            border-radius: 6px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .stack-item.popping {
+            animation: popOut 0.3s forwards;
+            background-color: #ef4444;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes popOut {
+            to {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+        }
+
+        /* Answer */
+        .answer-box {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            font-family: monospace;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .ans-tag {
+            background-color: var(--building-ocean);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* Log */
+        .log-box {
+            font-family: monospace;
+            background-color: #000;
+            color: #d1d5db;
+            padding: 15px;
+            border-radius: 8px;
+            height: 150px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .log-line {
+            margin-bottom: 4px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 2px;
+        }
+
+        .hl {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .red {
+            color: #ef4444;
+        }
+
+        .green {
+            color: var(--building-ocean);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Building With an Ocean View</h1>
+
+        <!-- Controls -->
+        <div class="controls-card">
+            <div class="input-group">
+                <label>Heights (comma separated)</label>
+                <input type="text" id="input-heights" value="4, 2, 3, 1">
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="init()">Reset/Start</button>
+                <button onclick="prevStep()" id="btn-prev" disabled>Prev</button>
+                <button onclick="nextStep()" id="btn-next" disabled>Step</button>
+                <button onclick="nextIteration()" id="btn-iter" disabled>Next Loop</button>
+                <button onclick="toggleAuto()" id="btn-auto" disabled>Auto Play</button>
+            </div>
+        </div>
+
+        <div class="viz-grid">
+            <!-- Left: City Scape -->
+            <div class="viz-panel">
+                <div class="panel-title">
+                    City Scape (Right to Left)
+                    <span id="current-idx-display" style="color:var(--accent); font-weight:bold"></span>
+                </div>
+                <div class="city-scape" id="city-scape">
+                    <div class="ocean-label">OCEAN</div>
+                    <!-- Buildings go here -->
+                </div>
+
+                <div class="panel-title" style="margin-top: 20px;">Current Answer (Indices)</div>
+                <div class="answer-box" id="answer-display"></div>
+            </div>
+
+            <!-- Right: Stack & Info -->
+            <div class="viz-panel">
+                <div class="panel-title">
+                    <span>Monotonic Stack</span>
+                    <small style="font-weight:normal;opacity:0.7">(idx, height)</small>
+                </div>
+                <div class="stack-container" id="stack-container">
+                    <!-- Stack items -->
+                </div>
+            </div>
+        </div>
+
+        <div class="log-box" id="log-console">
+            <div class="log-line">> Ready. Click Reset/Start to begin.</div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let heights = [];
+        let stack = []; // Stores indices
+        let answer = [];
+        let currentIndex = -1;
+        let step = 0; // 0: init, 1: select i, 2: check stack (pop loop), 3: add to stack/ans, 4: next i
+        let historyStack = [];
+        let autoInterval = null;
+
+        // DOM
+        const cityScape = document.getElementById('city-scape');
+        const stackContainer = document.getElementById('stack-container');
+        const answerDisplay = document.getElementById('answer-display');
+        const idxDisplay = document.getElementById('current-idx-display');
+        const logConsole = document.getElementById('log-console');
+        const btnNext = document.getElementById('btn-next');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnIter = document.getElementById('btn-iter');
+        const btnAuto = document.getElementById('btn-auto');
+
+        function log(msg) {
+            const div = document.createElement('div');
+            div.className = 'log-line';
+            div.innerHTML = `> ${msg}`;
+            logConsole.prepend(div);
+        }
+
+        function saveState() {
+            historyStack.push({
+                currentIndex, stack: [...stack], answer: [...answer], step,
+                logHtml: logConsole.innerHTML,
+                btnNextText: btnNext.innerText,
+                idxDisplayText: idxDisplay.innerText
+            });
+            btnPrev.disabled = false;
+        }
+
+        function init() {
+            if (autoInterval) clearInterval(autoInterval);
+            historyStack = [];
+
+            const raw = document.getElementById('input-heights').value;
+            heights = raw.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+
+            if (heights.length === 0) {
+                alert("Please enter valid heights");
+                return;
+            }
+
+            stack = [];
+            answer = [];
+            currentIndex = heights.length; // Start from right (initially out of bounds)
+            step = 1;
+
+            renderCity();
+            renderStack();
+            renderAnswer();
+            idxDisplay.innerText = "Ready";
+
+            logConsole.innerHTML = '<div class="log-line">> Initialized. Starting from right most building.</div>';
+            btnNext.disabled = false;
+            btnNext.innerText = "Start Loop";
+            btnIter.disabled = false;
+            btnPrev.disabled = true;
+            btnAuto.disabled = false;
+        }
+
+        function renderCity() {
+            cityScape.innerHTML = '<div class="ocean-label">OCEAN</div>';
+
+            const maxH = Math.max(...heights, 1);
+
+            heights.forEach((h, idx) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'building-wrapper';
+
+                const b = document.createElement('div');
+                b.className = 'building';
+                b.style.height = `${(h / maxH) * 200}px`;
+                if (idx === currentIndex) b.classList.add('active');
+                if (answer.includes(idx)) b.classList.add('ocean-view');
+
+                const val = document.createElement('span');
+                val.className = 'building-val';
+                val.innerText = h;
+
+                const idxLab = document.createElement('span');
+                idxLab.className = 'building-idx';
+                idxLab.innerText = idx;
+
+                wrapper.appendChild(val);
+                wrapper.appendChild(b);
+                wrapper.appendChild(idxLab);
+
+                cityScape.appendChild(wrapper);
+            });
+
+            // Update Text Display
+            if (currentIndex >= 0 && currentIndex < heights.length) {
+                idxDisplay.innerText = `Current i: ${currentIndex}`;
+            } else if (currentIndex < 0) {
+                idxDisplay.innerText = "Finished";
+            } else {
+                idxDisplay.innerText = "Ready";
+            }
+        }
+
+        function renderStack() {
+            stackContainer.innerHTML = '';
+            stack.forEach(idx => {
+                const item = document.createElement('div');
+                item.className = 'stack-item';
+                item.innerHTML = `<span>Idx: ${idx}</span> <span>H: ${heights[idx]}</span>`;
+                stackContainer.appendChild(item);
+            });
+            if (stack.length === 0) {
+                stackContainer.innerHTML = '<div style="color:#666; text-align:center; padding:10px;">Empty</div>';
+            }
+        }
+
+        function renderAnswer() {
+            const sorted = [...answer].sort((a, b) => a - b);
+            answerDisplay.innerHTML = sorted.map(i => `<span class="ans-tag">${i}</span>`).join('');
+        }
+
+        function prevStep() {
+            if (historyStack.length === 0) return;
+            const state = historyStack.pop();
+            currentIndex = state.currentIndex;
+            stack = state.stack;
+            answer = state.answer;
+            step = state.step;
+            logConsole.innerHTML = state.logHtml;
+            btnNext.innerText = state.btnNextText;
+            idxDisplay.innerText = state.idxDisplayText || "";
+
+            renderCity();
+            renderStack();
+            renderAnswer();
+
+            if (historyStack.length === 0) btnPrev.disabled = true;
+            btnNext.disabled = false;
+            btnIter.disabled = false;
+        }
+
+        function nextIteration() {
+            // Run until we hit step 1 again or finish
+            if (btnNext.disabled) return;
+
+            // If just starting
+            if (step === 1 && currentIndex === heights.length) {
+                nextStep(); // Move to last index
+            }
+
+            const loop = setInterval(() => {
+                if (btnNext.disabled) {
+                    clearInterval(loop);
+                    return;
+                }
+
+                nextStep();
+
+                if (step === 1) {
+                    clearInterval(loop);
+                }
+            }, 50);
+        }
+
+        function nextStep() {
+            if (currentIndex < 0 && step === 1) {
+                log("Finished iteration.");
+                btnNext.disabled = true;
+                btnIter.disabled = true;
+                btnAuto.disabled = true;
+                clearInterval(autoInterval);
+                return;
+            }
+
+            saveState();
+
+            // STEP 1: Move to next index
+            if (step === 1) {
+                currentIndex--;
+                if (currentIndex < 0) {
+                    log("No more buildings. Algorithm Finished.");
+                    renderCity();
+                    btnNext.disabled = true;
+                    btnIter.disabled = true;
+                    return;
+                }
+
+                renderCity();
+                log(`Check Index <span class="hl">${currentIndex}</span> (Height: ${heights[currentIndex]})`);
+                btnNext.innerText = "Check Stack";
+                step = 2;
+                return;
+            }
+
+            // STEP 2: While loop (Check Stack)
+            if (step === 2) {
+                const currentH = heights[currentIndex];
+
+                if (stack.length > 0) {
+                    const topIdx = stack[stack.length - 1];
+                    const topH = heights[topIdx];
+
+                    if (topH < currentH) {
+                        log(`Stack Top (idx:${topIdx}, h:${topH}) < Current (h:${currentH}). <span class="red">POP</span> ${topIdx}.`);
+
+                        // Visual Pop highlight
+                        const items = stackContainer.querySelectorAll('.stack-item');
+                        if (items.length > 0) {
+                            items[items.length - 1].classList.add('popping');
+                        }
+
+                        stack.pop();
+
+                        return; // Wait for next tick if animation/click wanted
+                    } else {
+                        // >= Condition. Stop Popping.
+                        log(`Stack Top (idx:${topIdx}, h:${topH}) >= Current (h:${currentH}). <span class="green">STOP popping</span>.`);
+                        step = 3;
+                        btnNext.innerText = "Update Result";
+                        // Auto-advance to result update to save a click? No, step-by-step
+                        renderStack();
+                        return;
+                    }
+                } else {
+                    log(`Stack is empty. No blocks to right.`);
+                    step = 3;
+                    btnNext.innerText = "Update Result";
+                    return;
+                }
+                return;
+            }
+
+            // STEP 3: Push Logic
+            if (step === 3) {
+                if (stack.length === 0) {
+                    log(`Stack empty => Building ${currentIndex} has **Ocean View**!`);
+                    answer.push(currentIndex);
+                } else {
+                    log(`Stack not empty => Building ${currentIndex} is blocked.`);
+                }
+
+                stack.push(currentIndex);
+                log(`Push ${currentIndex} to stack.`);
+
+                renderAnswer();
+                renderStack();
+                renderCity();
+
+                step = 1; // Back to begin of loop
+                btnNext.innerText = "Next Building";
+                return;
+            }
+        }
+
+        function toggleAuto() {
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+                btnAuto.innerText = "Auto Play";
+            } else {
+                nextStep();
+                autoInterval = setInterval(() => {
+                    if (btnNext.disabled) clearInterval(autoInterval);
+                    else nextStep();
+                }, 800);
+                btnAuto.innerText = "Stop";
+            }
+        }
+    </script>
+</body>
+
+</html>

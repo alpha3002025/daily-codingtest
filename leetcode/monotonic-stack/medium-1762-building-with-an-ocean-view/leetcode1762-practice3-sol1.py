@@ -1,6 +1,7 @@
 def solution(heights):
     stack = []
     answer = []
+
     for i in reversed(range(len(heights))):
         while stack and heights[stack[-1]] < heights[i]:
             stack.pop()
