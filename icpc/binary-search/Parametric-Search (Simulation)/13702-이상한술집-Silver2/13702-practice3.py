@@ -4,7 +4,7 @@ input = sys.stdin.readline
 N,K = map(int, input().split())
 wines = [int(input()) for _ in range(N)]
 
-left,right = 0, max(wines)
+left,right = 1, max(wines)
 
 answer = 0
 while left <= right:
