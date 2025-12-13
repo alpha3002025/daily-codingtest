@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2110 공유기 설치 - Parametric Search Visualization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #8b5cf6;
+            /* Purple for this one */
+            --accent-hover: #7c3aed;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --border-color: #334155;
+            --house-color: #64748b;
+            --house-selected: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(to right, #8b5cf6, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        input {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-item {
+            background-color: var(--bg-color);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .status-item.active-change {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+        }
+
+        .status-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* House Visualization */
+        .house-container {
+            position: relative;
+            height: 120px;
+            margin: 3rem 0;
+            display: flex;
+            align-items: center;
+            /* We will absolute position houses to represent distance */
+        }
+
+        .house-line {
+            position: absolute;
+            top: 60%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--border-color);
+            z-index: 0;
+        }
+
+        .house {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--card-bg);
+            border: 2px solid var(--house-color);
+            color: var(--house-color);
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 10;
+            transition: all 0.4s ease;
+        }
+
+        .house.selected {
+            background-color: var(--house-selected);
+            border-color: var(--house-selected);
+            color: #0f172a;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+            width: 40px;
+            height: 40px;
+            z-index: 20;
+        }
+
+        .house-coord {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            white-space: nowrap;
+        }
+
+        .distance-marker {
+            position: absolute;
+            top: 20%;
+            height: 10px;
+            border-left: 1px dashed var(--accent);
+            border-right: 1px dashed var(--accent);
+            border-top: 1px dashed var(--accent);
+            opacity: 0.6;
+            transition: all 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .distance-text {
+            background-color: var(--card-bg);
+            padding: 0 5px;
+            color: var(--accent);
+            font-size: 0.75rem;
+            margin-top: -8px;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th,
+        td {
+            padding: 0.75rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .log-entry:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .success-text {
+            color: var(--success);
+        }
+
+        .danger-text {
+            color: var(--danger);
+        }
+
+        .accent-text {
+            color: var(--accent);
+        }
+
+        .calculation-detail {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            border-left: 3px solid var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>공유기 설치 (2110) Visualization</h1>
+
+        <div class="card">
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="inputC">Routers Count (C)</label>
+                    <input type="number" id="inputC" value="3" min="2">
+                </div>
+                <div class="input-field">
+                    <label for="inputPositions">House Positions (comma separated)</label>
+                    <input type="text" id="inputPositions" value="1, 2, 8, 4, 9" placeholder="e.g. 1, 2, 8, 4, 9">
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn" onclick="start()">Start / Reset</button>
+                <div style="display: flex; gap: 0.5rem; flex: 1;">
+                    <button class="btn" style="background-color: var(--border-color);" onclick="prevStep()" id="btnPrev"
+                        disabled>Prev Step</button>
+                    <button class="btn" style="background-color: var(--border-color);" onclick="nextStep()" id="btnNext"
+                        disabled>Next Step</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="status-grid">
+                <div class="status-item" id="box-range">
+                    <div class="status-label">Range [L, R]</div>
+                    <div class="status-value" id="val-range">-</div>
+                </div>
+                <div class="status-item" id="box-mid">
+                    <div class="status-label">Target Dist (Mid)</div>
+                    <div class="status-value" id="val-mid">-</div>
+                </div>
+                <div class="status-item" id="box-cnt">
+                    <div class="status-label">Installed Routers</div>
+                    <div class="status-value" id="val-cnt">-</div>
+                </div>
+                <div class="status-item" id="box-ans">
+                    <div class="status-label">Current Answer</div>
+                    <div class="status-value success-text" id="val-ans">-</div>
+                </div>
+            </div>
+
+            <div class="house-container" id="houseContainer">
+                <!-- Houses will be drawn here -->
+                <div class="house-line"></div>
+            </div>
+
+            <div class="calculation-detail" id="calcDetail">
+                Enter inputs and press Start.
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Step History</h3>
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>Range [L, R]</th>
+                        <th>Mid</th>
+                        <th>Installed</th>
+                        <th>Decision</th>
+                        <th>Answer</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            C: 0,
+            originalPositions: [], // Unsorted input
+            positions: [], // Sorted
+
+            left: 0,
+            right: 0,
+            mid: 0,
+            answer: 0,
+
+            installed_cnt: 0,
+            installed_indices: [],
+
+            stepCount: 0,
+            isFinished: false,
+
+            // Revert support
+            snapshots: [],
+
+            // UI Text
+            currentDetail: "Ready"
+        };
+
+        function start() {
+            const strC = document.getElementById('inputC').value;
+            const strPos = document.getElementById('inputPositions').value;
+
+            if (!strC || !strPos) return alert("Please check inputs");
+
+            const C = parseInt(strC);
+            const rawPos = strPos.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+
+            if (rawPos.length < 2) return alert("Need at least 2 houses");
+
+            const positions = [...rawPos].sort((a, b) => a - b);
+
+            // Init State
+            state = {
+                C: C,
+                originalPositions: rawPos,
+                positions: positions,
+                left: 1,
+                right: positions[positions.length - 1] - positions[0],
+                mid: 0,
+                answer: 0,
+                installed_cnt: 0,
+                installed_indices: [],
+                stepCount: 0,
+                isFinished: false,
+                snapshots: [],
+                currentDetail: "Initialization: Sorted houses: " + positions.join(', ')
+            };
+
+            renderHouses();
+            updateUI("Initialized.");
+
+            document.getElementById('historyTable').querySelector('tbody').innerHTML = '';
+            document.getElementById('btnNext').disabled = false;
+            document.getElementById('btnPrev').disabled = true;
+            document.getElementById('btnNext').innerText = "Next Step";
+        }
+
+        function renderHouses() {
+            const container = document.getElementById('houseContainer');
+            // Keep the line
+            container.innerHTML = '<div class="house-line"></div>';
+
+            const minPos = state.positions[0];
+            const maxPos = state.positions[state.positions.length - 1];
+            const totalWidth = maxPos - minPos;
+
+            state.positions.forEach((pos, idx) => {
+                const el = document.createElement('div');
+                el.className = 'house';
+                el.id = `house-${idx}`;
+                el.innerText = 'H';
+
+                // Position percent
+                // Give some padding (5% to 95%)
+                const pct = totalWidth === 0 ? 50 : ((pos - minPos) / totalWidth) * 90 + 5;
+                el.style.left = `${pct}%`;
+
+                const label = document.createElement('div');
+                label.className = 'house-coord';
+                label.innerText = pos;
+                el.appendChild(label);
+
+                container.appendChild(el);
+            });
+        }
+
+        function updateHousesVisual() {
+            // Reset all
+            state.positions.forEach((_, idx) => {
+                const el = document.getElementById(`house-${idx}`);
+                if (el) el.classList.remove('selected');
+            });
+
+            // Highlight selected
+            state.installed_indices.forEach(idx => {
+                const el = document.getElementById(`house-${idx}`);
+                if (el) el.classList.add('selected');
+            });
+        }
+
+        function computeNextStep() {
+            // Snapshot
+            state.snapshots.push(JSON.parse(JSON.stringify({
+                left: state.left,
+                right: state.right,
+                mid: state.mid,
+                answer: state.answer,
+                installed_cnt: state.installed_cnt,
+                installed_indices: state.installed_indices,
+                stepCount: state.stepCount,
+                isFinished: state.isFinished,
+                currentDetail: state.currentDetail
+            })));
+
+            if (state.left > state.right) {
+                state.isFinished = true;
+                state.currentDetail = `<span class="success-text">Search Finished. Final Answer: ${state.answer}</span>`;
+                updateUI();
+                document.getElementById('btnNext').disabled = true;
+                document.getElementById('btnNext').innerText = "Finished";
+                document.getElementById('btnPrev').disabled = false;
+                return;
+            }
+
+            state.stepCount++;
+
+            // 1. Calc Mid
+            state.mid = Math.floor((state.left + state.right) / 2);
+
+            // 2. Greedy Placement Logic
+            let cnt = 1;
+            let current = state.positions[0];
+            let indices = [0]; // First house always selected
+
+            let logDetails = `Start at ${current}. Next needed >= ${current + state.mid}`;
+
+            for (let i = 1; i < state.positions.length; i++) {
+                if (state.positions[i] >= current + state.mid) {
+                    cnt++;
+                    current = state.positions[i];
+                    indices.push(i);
+                }
+            }
+
+            state.installed_cnt = cnt;
+            state.installed_indices = indices;
+
+            // 3. Update Range
+            let decision = "";
+            let oldAnswer = state.answer; // for diff check
+
+            if (cnt < state.C) {
+                // Too few routers -> Distance too big -> Decrease Right
+                decision = `Count(${cnt}) < C(${state.C}) → Gap too big`;
+                state.right = state.mid - 1;
+            } else {
+                // Enough routers (or more) -> Can potentially widen distance -> Increase Left
+                decision = `Count(${cnt}) >= C(${state.C}) → Possible! Try larger gap`;
+                state.answer = state.mid;
+                state.left = state.mid + 1;
+            }
+
+            state.currentDetail = `<strong>Check Distance ${state.mid}:</strong> Placed ${cnt} routers at [${indices.map(i => state.positions[i]).join(', ')}].<br>Result: <span class="${cnt >= state.C ? 'success-text' : 'danger-text'}">${decision}</span>`;
+
+            document.getElementById('btnPrev').disabled = false;
+            updateUI(decision);
+            addHistoryRow(state.snapshots[state.snapshots.length - 1]); // Log PRE-update state (the state used for calculation)
+        }
+
+        function prevStep() {
+            if (state.snapshots.length === 0) return;
+            const prev = state.snapshots.pop();
+
+            state.left = prev.left;
+            state.right = prev.right;
+            state.mid = prev.mid;
+            state.answer = prev.answer;
+            state.installed_cnt = prev.installed_cnt;
+            state.installed_indices = prev.installed_indices;
+            state.stepCount = prev.stepCount;
+            state.isFinished = prev.isFinished;
+            state.currentDetail = prev.currentDetail;
+
+            // Remove table row
+            const tbody = document.getElementById('historyTable').querySelector('tbody');
+            if (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+
+            document.getElementById('btnNext').disabled = false;
+            document.getElementById('btnNext').innerText = "Next Step";
+            if (state.snapshots.length === 0) document.getElementById('btnPrev').disabled = true;
+
+            updateUI();
+        }
+
+        function updateUI(decisionShort = "") {
+            document.getElementById('val-range').innerText = `[${state.left}, ${state.right}]`;
+            document.getElementById('val-mid').innerText = state.mid || "-";
+            document.getElementById('val-cnt').innerText = state.installed_cnt || "-";
+            document.getElementById('val-ans').innerText = state.answer || "-";
+
+            document.getElementById('calcDetail').innerHTML = state.currentDetail;
+
+            updateHousesVisual();
+
+            // Highlight boxes... (simplified for now)
+        }
+
+        function addHistoryRow(snapshot) {
+            // We want to show what happened in this step.
+            // Snapshot contains the state BEFORE the calc logic updated left/right?
+            // Actually my snapshot logic pushed BEFORE update.
+            // So snapshot has oldL, oldR.
+            // But we calculated mid using snapshot values.
+            // And we derived installed_cnt.
+
+            // Wait, logic sequence:
+            // 1. Snapshot
+            // 2. Calc Mid (using state.left/right which matches snapshot)
+            // 3. Calc Placement
+            // 4. Update Left/Right
+
+            // So to show the row for "Step X", we should show:
+            // L, R (from snapshot)
+            // Mid, Installed (Calculated this step)
+            // Decision (Derived this step)
+            // New Answer (Updated this step)
+
+            const tbody = document.getElementById('historyTable').querySelector('tbody');
+            const row = document.createElement('tr');
+            row.classList.add('log-entry');
+
+            // Re-derive decision short text for table
+            let decisionText = "";
+            if (state.installed_cnt < state.C) decisionText = "Decrease R";
+            else decisionText = "Increase L";
+
+            row.innerHTML = `
+                <td>${state.stepCount}</td>
+                <td>[${snapshot.left}, ${snapshot.right}]</td>
+                <td class="accent-text" style="font-weight:bold">${state.mid}</td>
+                <td>${state.installed_cnt}</td>
+                <td>${decisionText}</td>
+                 <td class="${state.answer !== snapshot.answer ? 'success-text' : ''}">${state.answer}</td>
+            `;
+            tbody.prepend(row);
+        }
+
+        // Aliases
+        const nextStep = computeNextStep;
+
+    </script>
+</body>
+
+</html>

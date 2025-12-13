@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2110 공유기 설치 (Prac2) - Visualization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #ec4899;
+            /* Pinkish for this version */
+            --accent-hover: #db2777;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border-color: #334155;
+            --house-color: #64748b;
+            --house-selected: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(to right, #ec4899, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        input {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: var(--border-color);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-item {
+            background-color: var(--bg-color);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .status-item.active-change {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+        }
+
+        .status-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* House Visualization */
+        .house-container {
+            position: relative;
+            height: 120px;
+            margin: 3rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .house-line {
+            position: absolute;
+            top: 60%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--border-color);
+            z-index: 0;
+        }
+
+        .house {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--card-bg);
+            border: 2px solid var(--house-color);
+            color: var(--house-color);
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 10;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .house.selected {
+            background-color: var(--house-selected);
+            border-color: var(--house-selected);
+            color: #0f172a;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+            width: 44px;
+            height: 44px;
+            z-index: 20;
+        }
+
+        /* Marker Arrow */
+        .house.selected::after {
+            content: "▼";
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--house-selected);
+            font-size: 1.2rem;
+            animation: bounce 0.6s infinite alternate;
+        }
+
+        /* Label "Installed" above the arrow */
+        .house.selected::before {
+            content: "Installed";
+            position: absolute;
+            top: -48px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--house-selected);
+            color: #0f172a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            white-space: nowrap;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translate(-50%, 0);
+            }
+
+            to {
+                transform: translate(-50%, -5px);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .house-coord {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            white-space: nowrap;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th,
+        td {
+            padding: 0.75rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        td {
+            font-variant-numeric: tabular-nums;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .log-entry {
+            transition: background-color 0.2s;
+        }
+
+        .log-entry:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .success-text {
+            color: var(--success);
+        }
+
+        .danger-text {
+            color: var(--danger);
+        }
+
+        .accent-text {
+            color: var(--accent);
+        }
+
+        .calculation-detail {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            border-left: 3px solid var(--accent);
+        }
+
+        .variable-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            font-size: 0.85em;
+            margin: 0 2px;
+        }
+
+        /* Tooltip for explanation */
+        .tooltip-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        /* Coverage Zone (Shading) */
+        .coverage-zone {
+            position: absolute;
+            top: 55%;
+            height: 12px;
+            background: linear-gradient(90deg, rgba(236, 72, 153, 0.4) 0%, rgba(236, 72, 153, 0.1) 100%);
+            transform: translateY(-50%);
+            z-index: 5;
+            border-radius: 0 4px 4px 0;
+            pointer-events: none;
+            border-bottom: 2px solid rgba(236, 72, 153, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .coverage-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            color: var(--accent);
+            white-space: nowrap;
+            opacity: 0.8;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>2110 공유기 설치 Analysis</h1>
+
+        <div class="card">
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="inputC">Routers Count (C)</label>
+                    <input type="number" id="inputC" value="3" min="2">
+                </div>
+                <div class="input-field">
+                    <label for="inputHouses">Houses Positions (N)</label>
+                    <input type="text" id="inputHouses" value="1, 2, 8, 4, 9" placeholder="e.g. 1, 2, 8, 4, 9">
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn" onclick="start()" id="btnStart">Start / Reset</button>
+                <div style="display: flex; gap: 0.5rem; flex: 1;">
+                    <button class="btn" style="background-color: var(--border-color);" onclick="prevStep()" id="btnPrev"
+                        disabled>Prev Step</button>
+                    <button class="btn" style="background-color: var(--border-color);" onclick="nextStep()" id="btnNext"
+                        disabled>Next Step</button>
+                </div>
+            </div>
+
+            <div class="tooltip-container">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--house-selected)"></div>
+                    <span>Installed Router</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--card-bg); border: 2px solid var(--house-color)">
+                    </div>
+                    <span>House (Empty)</span>
+                </div>
+                <div class="legend-item">
+                    <strong style="color: var(--accent)">Mid</strong>: Current Target Distance
+                </div>
+                <div class="legend-item">
+                    <div
+                        style="width: 20px; height: 10px; background: rgba(236, 72, 153, 0.4); border-bottom: 2px solid rgba(236, 72, 153, 0.5)">
+                    </div>
+                    <span>Coverage (No Install Zone)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="status-grid">
+                <div class="status-item" id="box-range">
+                    <div class="status-label">Search Range (left ~ right)</div>
+                    <div class="status-value" id="val-range">-</div>
+                </div>
+                <div class="status-item" id="box-mid">
+                    <div class="status-label">mid (Target Distance)</div>
+                    <div class="status-value" id="val-mid">-</div>
+                </div>
+                <div class="status-item" id="box-count">
+                    <div class="status-label">count (Installed)</div>
+                    <div class="status-value" id="val-count">-</div>
+                </div>
+                <div class="status-item" id="box-ans">
+                    <div class="status-label">answer (Max Dist)</div>
+                    <div class="status-value success-text" id="val-ans">-</div>
+                </div>
+            </div>
+
+            <div class="house-container" id="houseContainer">
+                <!-- Houses will be drawn here -->
+                <div class="house-line"></div>
+            </div>
+
+            <div class="calculation-detail" id="calcDetail">
+                Simulation Ready. Press Start.
+            </div>
+        </div>
+
+        <div class="card" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+            <div>
+                <h3>Variable History</h3>
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>l ~ r</th>
+                            <th>mid</th>
+                            <th>count</th>
+                            <th>Reasoning</th>
+                            <th>ans</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem; height: fit-content;">
+                <h3
+                    style="font-size: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                    Installed List (Step <span id="stepNum">-</span>)
+                </h3>
+                <div id="installedList" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">No routers installed yet.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management with snapshots for Undo
+        let state = {
+            C: 0,
+            houses: [], // Sorted
+
+            left: 0,
+            right: 0,
+            mid: 0,
+            answer: 0,
+
+            count: 0,
+            installed_indices: [],
+
+            stepCount: 0,
+            isFinished: false,
+
+            // Undo Stack
+            snapshots: [],
+
+            // Current Logs
+            currentDetailHTML: "Ready."
+        };
+
+        function start() {
+            const strC = document.getElementById('inputC').value;
+            const strHouses = document.getElementById('inputHouses').value;
+
+            if (!strC || !strHouses) return alert("Please check inputs");
+
+            const C = parseInt(strC);
+            const rawHouses = strHouses.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+
+            if (rawHouses.length < 2) return alert("Need at least 2 houses");
+
+            const houses = [...rawHouses].sort((a, b) => a - b);
+
+            // Initial State setup matching Python logic
+            // left, right = 1, houses[-1] - houses[0]
+
+            state = {
+                C: C,
+                houses: houses,
+
+                left: 1,
+                right: houses[houses.length - 1] - houses[0],
+                mid: 0,
+                answer: 0,
+
+                count: 0,
+                installed_indices: [],
+
+                stepCount: 0,
+                isFinished: false,
+                snapshots: [],
+                currentDetailHTML: `Initialized. Sorted Houses: [${houses.join(', ')}]`
+            };
+
+            // Reset UI
+            renderHouses();
+            updateUI(state.currentDetailHTML);
+            document.getElementById('historyTable').querySelector('tbody').innerHTML = '';
+
+            document.getElementById('btnNext').disabled = false;
+            document.getElementById('btnPrev').disabled = true;
+            document.getElementById('btnNext').innerText = "Next Step";
+        }
+
+        function renderHouses() {
+            const container = document.getElementById('houseContainer');
+            container.innerHTML = '<div class="house-line"></div>';
+
+            const minPos = state.houses[0];
+            const maxPos = state.houses[state.houses.length - 1];
+            const range = maxPos - minPos;
+
+            state.houses.forEach((pos, idx) => {
+                const el = document.createElement('div');
+                el.className = 'house';
+                el.id = `house-${idx}`;
+                el.innerText = pos;
+
+                // Position logic
+                const pct = range === 0 ? 50 : ((pos - minPos) / range) * 92 + 4; // 4% padding
+                el.style.left = `${pct}%`;
+
+                // Add tooltip-like label
+                // const label = document.createElement('div');
+                // label.className = 'house-coord';
+                // label.innerText = pos;
+                // el.appendChild(label);
+
+                container.appendChild(el);
+            });
+        }
+
+        function updateVisuals() {
+            // 1. Reset Houses
+            state.houses.forEach((_, idx) => {
+                const el = document.getElementById(`house-${idx}`);
+                if (el) {
+                    el.classList.remove('selected');
+                    // el.innerText = state.houses[idx]; // Keep original text
+                }
+            });
+
+            // 2. Clear Old Coverage Zones
+            document.querySelectorAll('.coverage-zone').forEach(el => el.remove());
+
+            // 3. Highlight Installed & Draw Coverage
+            const container = document.getElementById('houseContainer');
+            const minPos = state.houses[0];
+            const maxPos = state.houses[state.houses.length - 1];
+            const totalWidth = maxPos - minPos;
+
+            state.installed_indices.forEach(idx => {
+                // Highlight House
+                const el = document.getElementById(`house-${idx}`);
+                if (el) el.classList.add('selected');
+
+                // Draw Coverage Zone (Mid distance)
+                if (state.mid > 0 && totalWidth > 0) {
+                    const pos = state.houses[idx];
+
+                    // Calculate percentages relative to the container rendering logic
+                    // Render logic: ((pos - minPos) / range) * 92 + 4;
+                    const startPct = ((pos - minPos) / totalWidth) * 92 + 4;
+
+                    // Width represents 'mid' distance
+                    // widthPct = (mid / totalWidth) * 92
+                    let widthPct = (state.mid / totalWidth) * 92;
+
+                    // Create Zone
+                    const zone = document.createElement('div');
+                    zone.className = 'coverage-zone';
+                    zone.style.left = `${startPct}%`;
+                    zone.style.width = `${widthPct}%`;
+
+                    // Optional label for the first one only, to avoid clutter?
+                    // Or label only if width is large enough
+                    if (idx === 0) {
+                        zone.innerHTML = `<div class="coverage-label">dist &lt; ${state.mid}</div>`;
+                    }
+
+                    container.appendChild(zone);
+                }
+            });
+        }
+
+        function computeNextStep() {
+            // 1. Snapshot State BEFORE mutation
+            state.snapshots.push(JSON.parse(JSON.stringify({
+                left: state.left,
+                right: state.right,
+                mid: state.mid,
+                answer: state.answer,
+                count: state.count,
+                installed_indices: state.installed_indices,
+                stepCount: state.stepCount,
+                isFinished: state.isFinished,
+                currentDetailHTML: state.currentDetailHTML
+            })));
+
+            // Check finish
+            if (state.left > state.right) {
+                state.isFinished = true;
+                state.currentDetailHTML = `<span class="success-text"><strong>Finished!</strong> Final Answer = ${state.answer}</span>`;
+                updateUI();
+                document.getElementById('btnNext').disabled = true;
+                document.getElementById('btnNext').innerText = "Finished";
+                document.getElementById('btnPrev').disabled = false;
+                return;
+            }
+
+            state.stepCount++;
+
+            // Python Logic:
+            // mid = (left + right) // 2
+            state.mid = Math.floor((state.left + state.right) / 2);
+
+            // Greedy Simulation
+            let count = 1;
+            let last = state.houses[0]; // last installed position
+            let indices = [0];
+
+            // Visualization of greedy steps
+            let stepsLog = [`Placed at ${last}`];
+
+            for (let i = 1; i < state.houses.length; i++) {
+                // if house - last >= mid
+                const house = state.houses[i];
+                if (house - last >= state.mid) {
+                    count += 1;
+                    last = house;
+                    indices.push(i);
+                    stepsLog.push(`Placed at ${house} (dist ${house - state.houses[indices[indices.length - 2]]} >= ${state.mid})`);
+                } else {
+                    // Skipped
+                }
+            }
+
+            state.count = count;
+            state.installed_indices = indices;
+
+            // Decision Logic
+            // if count >= C:
+            let decisionShort = "";
+            let logReasoning = "";
+            let oldAnswer = state.answer; // for table highlight
+
+            if (count >= state.C) {
+                // answer = mid, left = mid+1
+                state.answer = state.mid;
+                state.left = state.mid + 1;
+                decisionShort = `Satisfied (count ${count} >= ${state.C})`;
+                logReasoning = `Can install ${count} routers.<br>Try larger gap.`;
+            } else {
+                // right = mid-1
+                state.right = state.mid - 1;
+                decisionShort = `Failed (count ${count} < ${state.C})`;
+                logReasoning = `Only ${count} installed.<br>Gap too big, decrease it.`;
+            }
+
+            // Details HTML
+            state.currentDetailHTML = `
+                <div><strong>Logic Check (mid=${state.mid}):</strong></div>
+                <div style="font-size: 0.85em; margin-bottom:0.5em; color: var(--text-secondary)">${stepsLog.join(' &#8594; ')}</div>
+                <div class="${count >= state.C ? 'success-text' : 'danger-text'}">
+                    Result: ${count} installed. ${decisionShort}
+                </div>
+            `;
+
+            document.getElementById('btnPrev').disabled = false;
+            document.getElementById('btnPrev').disabled = false;
+            updateUI(logReasoning);
+            updateInstalledList(state.installed_indices.map(i => state.houses[i]), count);
+
+            // Log Table
+
+            // Log Table
+            // Note: Table row shows the values used for calculation (Snapshot L/R) and the RESULTS (Calculated Mid, Count, New L/R/Ans)
+            // But we actually just want a consistent row.
+            // Let's print [Step] | [Old L~R] | [Calculated Mid] | [Result Count] | [Decision] | [Current Ans]
+            const snapshot = state.snapshots[state.snapshots.length - 1]; // State before this step
+
+            addToTable({
+                step: state.stepCount,
+                l: snapshot.left,
+                r: snapshot.right,
+                mid: state.mid,
+                cnt: count,
+                reason: decisionShort,
+                ans: state.answer
+            });
+        }
+
+        function prevStep() {
+            if (state.snapshots.length === 0) return;
+            const prev = state.snapshots.pop();
+
+            state.left = prev.left;
+            state.right = prev.right;
+            state.mid = prev.mid;
+            state.answer = prev.answer;
+            state.count = prev.count;
+            state.installed_indices = prev.installed_indices;
+            state.stepCount = prev.stepCount;
+            state.isFinished = prev.isFinished;
+            state.currentDetailHTML = prev.currentDetailHTML;
+
+            // Remove last row
+            const tbody = document.getElementById('historyTable').querySelector('tbody');
+            if (tbody.firstElementChild) tbody.removeChild(tbody.firstElementChild);
+
+            document.getElementById('btnNext').disabled = false;
+            document.getElementById('btnNext').innerText = "Next Step";
+            if (state.snapshots.length === 0) document.getElementById('btnPrev').disabled = true;
+
+            updateUI();
+
+            // Update List for prev state
+            if (state.installed_indices && state.installed_indices.length > 0) {
+                updateInstalledList(state.installed_indices.map(i => state.houses[i]), state.count);
+            } else {
+                document.getElementById('installedList').innerHTML = '<div style="color: var(--text-secondary); font-size: 0.9rem;">No routers installed yet.</div>';
+                document.getElementById('stepNum').innerText = "-";
+            }
+        }
+
+        function updateInstalledList(coords, count) {
+            const listEl = document.getElementById('installedList');
+            document.getElementById('stepNum').innerText = state.stepCount;
+
+            if (!coords || coords.length === 0) {
+                listEl.innerHTML = '<div style="color: var(--text-secondary); font-size: 0.9rem;">No routers installed.</div>';
+                return;
+            }
+
+            let html = '';
+            coords.forEach((pos, idx) => {
+                // Determine distance from previous
+                let distInfo = "";
+                if (idx > 0) {
+                    const dist = pos - coords[idx - 1];
+                    const isOk = dist >= state.mid;
+                    const color = isOk ? 'var(--success)' : 'var(--danger)';
+                    distInfo = `<span style="font-size:0.8em; color:${color}; margin-left: auto;">(dist ${dist})</span>`;
+                }
+
+                html += `
+                    <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--bg-color); padding: 0.5rem; border-radius: 0.25rem; border-left: 3px solid var(--house-selected);">
+                        <div style="font-weight: bold; color: var(--text-primary);">House @ ${pos}</div>
+                        ${distInfo}
+                    </div>
+                `;
+            });
+
+            // Summary footer
+            const resultColor = count >= state.C ? 'var(--success)' : 'var(--warning)';
+            html += `
+                <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--border-color); text-align: right; color: ${resultColor}; font-weight: bold;">
+                    Total: ${count} / Target: ${state.C}
+                </div>
+            `;
+
+            listEl.innerHTML = html;
+        }
+
+        function updateUI(logReasoning) {
+            document.getElementById('val-range').innerText = `[${state.left}, ${state.right}]`;
+            document.getElementById('val-mid').innerText = state.mid || "-";
+            document.getElementById('val-count').innerText = state.count || "-";
+            document.getElementById('val-ans').innerText = state.answer || "-";
+
+            document.getElementById('calcDetail').innerHTML = state.currentDetailHTML;
+
+            updateVisuals();
+
+            if (state.left !== undefined) {
+                highlightBox('box-range');
+            }
+        }
+
+        function addToTable(data) {
+            const tbody = document.getElementById('historyTable').querySelector('tbody');
+            const row = document.createElement('tr');
+            row.className = 'log-entry';
+
+            const isSuccess = data.cnt >= state.C;
+
+            row.innerHTML = `
+                <td>${data.step}</td>
+                <td>${data.l}</td>
+                <td>${data.r}</td>
+                <td class="accent-text" style="font-weight:700">${data.mid}</td>
+                <td>${data.cnt}</td>
+                <td class="${isSuccess ? 'success-text' : 'danger-text'}">${data.reason}</td>
+                <td>${data.ans}</td>
+            `;
+            tbody.prepend(row);
+        }
+
+        function highlightBox(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('active-change');
+                void el.offsetWidth;
+                el.classList.add('active-change');
+            }
+        }
+
+        // Aliases
+        const nextStep = computeNextStep;
+
+    </script>
+</body>
+
+</html>
