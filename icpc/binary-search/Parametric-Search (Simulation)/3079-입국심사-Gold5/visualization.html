@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3079 입국심사 - Parametric Search Visualization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        input {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-item {
+            background-color: var(--bg-color);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .status-item.active-change {
+            border-color: var(--accent);
+            background-color: rgba(56, 189, 248, 0.1);
+        }
+
+        .status-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .visualization-area {
+            position: relative;
+            height: 100px;
+            margin: 2rem 0;
+            background: linear-gradient(to right, transparent 0%, var(--border-color) 50%, transparent 100%);
+            background-size: 10px 10px;
+            /* simple grid pattern equivalent */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Use a simpler bar representation for the range */
+        .range-bar-container {
+            position: relative;
+            width: 100%;
+            height: 40px;
+            background-color: var(--bg-color);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .range-bar {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background-color: rgba(56, 189, 248, 0.2);
+            transition: all 0.5s ease;
+        }
+
+        .mid-marker {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--accent);
+            z-index: 10;
+            transition: all 0.5s ease;
+        }
+
+        .mid-label {
+            position: absolute;
+            top: -25px;
+            /* above the bar */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+
+        .marker-label {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            transform: translateX(-50%);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th,
+        td {
+            padding: 0.75rem;
+            text-align: right;
+            /* Numeric alignment */
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th:first-child,
+        td:first-child {
+            text-align: left;
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .log-entry {
+            transition: background-color 0.2s;
+        }
+
+        .log-entry:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .log-entry.current-step {
+            background-color: rgba(56, 189, 248, 0.1);
+            border-left: 2px solid var(--accent);
+        }
+
+        .calculation-detail {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: var(--bg-color);
+            border-radius: 0.5rem;
+        }
+
+        .highlight {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .success-text {
+            color: var(--success);
+        }
+
+        .warning-text {
+            color: var(--warning);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>입국심사 (3079) Visualization</h1>
+
+        <div class="card">
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="inputM">Total People (M)</label>
+                    <input type="number" id="inputM" value="6" min="1">
+                </div>
+                <div class="input-field">
+                    <label for="inputTimes">Checkers Times (comma separated)</label>
+                    <input type="text" id="inputTimes" value="7, 10" placeholder="e.g. 7, 10">
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn" onclick="startVisualization()">Start / Reset</button>
+                <div style="display: flex; gap: 0.5rem; flex: 1;">
+                    <button class="btn" style="background-color: var(--border-color);" onclick="prevStep()" id="btnPrev"
+                        disabled>Prev Step</button>
+                    <button class="btn" style="background-color: var(--border-color);" onclick="nextStep()" id="btnNext"
+                        disabled>Next Step</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="status-grid">
+                <div class="status-item" id="box-left">
+                    <div class="status-label">Left</div>
+                    <div class="status-value" id="val-left">-</div>
+                </div>
+                <div class="status-item" id="box-right">
+                    <div class="status-label">Right</div>
+                    <div class="status-value" id="val-right">-</div>
+                </div>
+                <div class="status-item" id="box-mid">
+                    <div class="status-label">Mid (Total Time)</div>
+                    <div class="status-value" id="val-mid">-</div>
+                </div>
+                <div class="status-item" id="box-passed">
+                    <div class="status-label">Passed Count</div>
+                    <div class="status-value" id="val-passed">-</div>
+                </div>
+                <div class="status-item" id="box-answer">
+                    <div class="status-label">Answer</div>
+                    <div class="status-value" style="color: var(--success)" id="val-answer">-</div>
+                </div>
+            </div>
+
+            <!-- Visual Representation of Range -->
+            <div class="range-bar-container" id="rangeContainer">
+                <div class="range-bar" id="rangeBar"></div>
+                <div class="mid-marker" id="midMarker">
+                    <div class="mid-label" id="midLabel"></div>
+                </div>
+                <div class="marker-label" style="left: 0%" id="labelLeft">L</div>
+                <div class="marker-label" style="left: 100%" id="labelRight">R</div>
+            </div>
+
+            <div class="calculation-detail" id="calcDetail">
+                Press "Start" to begin the simulation.
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Step History</h3>
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>Left</th>
+                        <th>Right</th>
+                        <th>Mid</th>
+                        <th>Passed Count</th>
+                        <th>Calculation</th>
+                        <th>New Answer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- History rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            M: 0,
+            times: [],
+            left: 0,
+            right: 0,
+            mid: 0,
+            answer: 0,
+            passed_cnt: 0,
+            stepCount: 0,
+            isFinished: false,
+            initialMin: 0,
+            initialMax: 0,
+            
+            // For History/Undo
+            snapshots: [],
+            currentCalcString: "",
+            currentDecisionHTML: "Press \"Start\" to begin the simulation."
+        };
+
+        function startVisualization() {
+            // 1. Get Inputs
+            const strM = document.getElementById('inputM').value;
+            const strTimes = document.getElementById('inputTimes').value;
+            
+            if (!strM || !strTimes) {
+                alert("Please valid inputs.");
+                return;
+            }
+
+            const M = parseInt(strM);
+            const times = strTimes.split(',').map(t => parseInt(t.trim())).filter(n => !isNaN(n));
+            
+            if (times.length === 0) {
+                alert("Please provide at least one valid time.");
+                return;
+            }
+
+            // 2. Initialize State
+            state = {
+                M: M,
+                times: times,
+                left: 1,
+                right: Math.max(...times) * M,
+                answer: 0,
+                mid: 0,
+                passed_cnt: 0,
+                stepCount: 0,
+                history: [],
+                isFinished: false,
+                initialMin: 1,
+                initialMax: Math.max(...times) * M,
+                snapshots: [],
+                currentCalcString: "",
+                currentDecisionHTML: "Ready to start binary search..."
+            };
+
+            // Reset UI
+            document.getElementById('historyTable').querySelector('tbody').innerHTML = '';
+            document.getElementById('btnNext').disabled = false;
+            document.getElementById('btnNext').innerText = "Next Step";
+            document.getElementById('btnPrev').disabled = true;
+            
+            updateUI(state.currentCalcString, state.currentDecisionHTML);
+        }
+
+        // Renamed for clarity in logic, though mapped to "nextStep"
+        function computeNextStep() {
+             // Snapshot before update
+            const oldLeft = state.left;
+            const oldRight = state.right;
+            const oldAnswer = state.answer;
+            const oldMid = state.mid;
+            const oldPassed = state.passed_cnt;
+            const oldStepCount = state.stepCount;
+            const oldIsFinished = state.isFinished;
+            const oldCalcString = state.currentCalcString;
+            const oldDecisionHTML = state.currentDecisionHTML;
+
+            // Push to history stack
+            state.snapshots.push({
+                left: oldLeft,
+                right: oldRight,
+                answer: oldAnswer,
+                mid: oldMid,
+                passed_cnt: oldPassed,
+                stepCount: oldStepCount,
+                isFinished: oldIsFinished,
+                calcString: oldCalcString,
+                decisionHTML: oldDecisionHTML
+            });
+            
+             if (oldLeft > oldRight) {
+                // End condition reached
+                state.isFinished = true;
+                state.currentDecisionHTML = `<span class="success-text">Binary Search Complete. Final Answer: ${state.answer}</span>`;
+                updateUI(state.currentCalcString, state.currentDecisionHTML);
+                document.getElementById('btnNext').disabled = true;
+                document.getElementById('btnNext').innerText = "Finished";
+                document.getElementById('btnPrev').disabled = false;
+                return;
+            }
+
+            state.stepCount++;
+            
+            // Logic
+            state.mid = Math.floor((oldLeft + oldRight) / 2);
+            let details = [];
+            state.passed_cnt = state.times.reduce((acc, t) => {
+                const count = Math.floor(state.mid / t);
+                details.push(`${t}→${count}`);
+                return acc + count;
+            }, 0);
+            state.currentCalcString = details.join(', ');
+            
+            let newAnswer = oldAnswer; // Default if not updated
+            
+            if (state.passed_cnt >= state.M) {
+                // Update Answer, Move Left (decrease Right)
+                state.answer = state.mid;
+                newAnswer = state.mid;
+                state.right = state.mid - 1;
+                state.currentDecisionHTML = `Passed(${state.passed_cnt}) >= M. FOUND POSSIBLE ANSWER (${state.mid}).<br>Search Lower Half.`;
+            } else {
+                // Move Right (increase Left)
+                state.left = state.mid + 1;
+                state.currentDecisionHTML = `Passed(${state.passed_cnt}) < M. Too few.<br>Search Upper Half.`;
+            }
+            
+            document.getElementById('btnPrev').disabled = false;
+            updateUI(state.currentCalcString, state.currentDecisionHTML);
+            
+            // Add Table Row
+            const tbody = document.getElementById('historyTable').querySelector('tbody');
+            const row = document.createElement('tr');
+            row.classList.add('log-entry');
+            row.innerHTML = `
+                <td>${state.stepCount}</td>
+                <td>${oldLeft}</td>
+                <td>${oldRight}</td>
+                <td class="highlight">${state.mid}</td>
+                <td>${state.passed_cnt}</td>
+                <td style="font-size: 0.8em; text-align:left;">${state.currentCalcString}</td>
+                <td class="${newAnswer !== oldAnswer ? 'success-text' : ''}">${newAnswer || '-'}</td>
+            `;
+            tbody.prepend(row); // Newest first
+            
+            // Highlight active change boxes
+            setTimeout(() => {
+                if(state.left !== oldLeft) highlightBox('box-left');
+                if(state.right !== oldRight) highlightBox('box-right');
+                if(state.answer !== oldAnswer) highlightBox('box-answer');
+            }, 10);
+        }
+        
+        function highlightBox(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('active-change');
+            void el.offsetWidth; // trigger reflow
+            el.classList.add('active-change');
+        }
+
+        function prevStep() {
+            if (state.snapshots.length === 0) return;
+
+            const prev = state.snapshots.pop();
+            
+            // Restore State
+            state.left = prev.left;
+            state.right = prev.right;
+            state.answer = prev.answer;
+            state.mid = prev.mid;
+            state.passed_cnt = prev.passed_cnt;
+            state.stepCount = prev.stepCount;
+            state.isFinished = prev.isFinished;
+            state.currentCalcString = prev.calcString;
+            state.currentDecisionHTML = prev.decisionHTML;
+
+            // Remove last added row from table (which is the FIRST child because of prepend)
+            const tbody = document.getElementById('historyTable').querySelector('tbody');
+            if (tbody.firstChild) {
+                tbody.removeChild(tbody.firstChild);
+            }
+
+            // Restore UI Buttons
+            document.getElementById('btnNext').disabled = false;
+            document.getElementById('btnNext').innerText = "Next Step";
+            
+            if (state.snapshots.length === 0) {
+                document.getElementById('btnPrev').disabled = true;
+            }
+
+            updateUI(state.currentCalcString, state.currentDecisionHTML);
+        }
+
+        function updateUI(calcDetails = "", decision = "", logAction = "") {
+            // Update Number Boxes
+            document.getElementById('val-left').innerText = state.left;
+            document.getElementById('val-right').innerText = state.right; 
+            document.getElementById('val-mid').innerText = state.mid || "-";
+            document.getElementById('val-passed').innerText = state.passed_cnt || "-";
+            document.getElementById('val-answer').innerText = state.answer || "-";
+
+            // Calculation Details Text
+            if (decision) {
+                 const detailHTML = `
+                    <div style="margin-bottom: 0.5rem"><strong>Calculations:</strong> ${calcDetails || 'None'}</div>
+                    <div class="${(state.passed_cnt >= state.M) ? 'success-text' : 'warning-text'}">
+                        ${decision}
+                    </div>
+                 `;
+                 document.getElementById('calcDetail').innerHTML = detailHTML;
+            }
+
+            // Visual Bar Update
+            const range = state.initialMax - state.initialMin;
+            if (range > 0) {
+                const getPct = (val) => ((val - state.initialMin) / range) * 100;
+                
+                let currentL = state.left;
+                let currentR = state.right;
+                
+                // If currentR < currentL, range is invalid or finished.
+                const leftPct = Math.max(0, Math.min(100, getPct(currentL)));
+                const rightPct = Math.max(0, Math.min(100, getPct(currentR)));
+                const midPct = Math.max(0, Math.min(100, getPct(state.mid)));
+                
+                const barLeft = leftPct;
+                const barWidth = Math.max(0, rightPct - leftPct); 
+
+                const barEl = document.getElementById('rangeBar');
+                barEl.style.left = `${barLeft}%`;
+                barEl.style.width = `${barWidth}%`;
+
+                const midEl = document.getElementById('midMarker');
+                // process mid only if we have a valid mid (step > 0 or loaded state with mid)
+                if (state.mid > 0) {
+                    midEl.style.left = `${midPct}%`;
+                    midEl.style.opacity = 1;
+                    document.getElementById('midLabel').innerText = state.mid;
+                } else {
+                    midEl.style.opacity = 0;
+                }
+                
+                document.getElementById('labelLeft').style.left = `${leftPct}%`;
+                document.getElementById('labelLeft').innerText = `L:${currentL}`;
+                // Hide L label if it overlaps too much or looks weird? kept simple for now
+                
+                document.getElementById('labelRight').style.left = `${rightPct}%`;
+                document.getElementById('labelRight').innerText = `R:${currentR}`;
+            }
+        }
+        
+        // Bind nextStep
+        const nextStep = computeNextStep;
+
+    </script>
+</body>
+
+</html>

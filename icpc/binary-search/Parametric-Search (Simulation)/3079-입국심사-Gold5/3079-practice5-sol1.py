@@ -13,6 +13,9 @@ while left <= right:
     mid = (left + right)//2
 
     passed_cnt = 0
+    ## 심사위원 한명이 끝나야 다른 심사위원이 심사를 하는 구조가 아니라
+    ## n 명의 심사위원이 있으면 n명이 동시에 심사를 할 수 있기에 각각의 mid//duration 을 합한다.
+    ## 즉, 시간 mid 에 대해 n 명의 심사위원 각각이 모두 심사를 마쳤을 때 총합을 구하는 로직
     for duration in checkers_duration:
         passed_cnt += mid//duration
     
