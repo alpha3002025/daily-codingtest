@@ -1,0 +1,62 @@
+# 문자열 압축
+
+## 문제 설명
+문자열 `s`를 1개 단위, 2개 단위, ..., `len(s)//2`개 단위로 잘라 압축했을 때, 가장 짧게 압축된 문자열의 길이를 구하는 문제입니다.
+압축 규칙: 반복되는 문자열은 "개수+단위문자열"로 표현 (예: `aabbaccc` -> 1개 단위: `2a2ba3c`, 1문자는 생략).
+
+### 핵심 개념
+1.  **완전 탐색 (Exhaustive Search)**: 문자열 길이가 최대 1,000이므로, 자르는 단위를 1부터 $N/2$까지 모두 시도해봐도 충분합니다.
+    - $N=1000$ 일 때, $500 \times (1000/Unit)$ 정도의 연산 -> 매우 적음.
+2.  **문자열 슬라이싱**: `s[i:i+unit]` 형태로 자를 수 있습니다.
+3.  **구현**: 이전 문자열(`prev`)과 현재 문자열(`curr`)을 비교하며 카운팅합니다.
+
+## Python 풀이
+
+```python
+def solution(s):
+    n = len(s)
+    # 문자열 길이가 1이면 압축 불가, 길이는 1
+    if n == 1:
+        return 1
+        
+    min_length = n # 압축 안 했을 때가 초기값
+    
+    # 단위(unit) 크기: 1 ~ n//2
+    for unit in range(1, n // 2 + 1):
+        compressed = ""
+        prev = s[:unit]
+        count = 1
+        
+        # unit 간격으로 순회
+        for i in range(unit, n, unit):
+            curr = s[i:i+unit]
+            
+            if prev == curr:
+                count += 1
+            else:
+                # 이전까지의 패턴 기록
+                if count > 1:
+                    compressed += str(count) + prev
+                else:
+                    compressed += prev
+                    
+                # 초기화
+                prev = curr
+                count = 1
+        
+        # 남은 마지막 조각 처리
+        if count > 1:
+            compressed += str(count) + prev
+        else:
+            compressed += prev
+            
+        min_length = min(min_length, len(compressed))
+        
+    return min_length
+```
+
+### 코드 설명
+- `unit` 크기로 자르기 위해 `range(unit, n, unit)`을 사용합니다.
+- `prev`는 직전 블록, `curr`은 현재 블록.
+- 루프가 끝나고 마지막에 남아있는 `prev` 처리를 잊지 말아야 합니다.
+- 압축된 문자열 `compressed`를 실제로 만들지 않고 길이만 계산해도 되지만, 문자열을 만드는 게 직관적이고 디버깅하기 좋습니다. (길이가 짧으므로 성능 문제 X)
