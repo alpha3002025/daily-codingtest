@@ -1,142 +1,101 @@
-# 봉인된 주문 (Sealed Spell)
+# 봉인된 주문
 
 ## 문제 설명
+영일이는 마법의 주문을 외우려고 합니다. 주문서는 규칙에 따라 생성된 문자열들의 리스트입니다.
+1. 길이가 짧은 문자열이 먼저 나옵니다.
+2. 길이가 같다면 사전 순으로 정렬됩니다.
+(`a`, `b`, ..., `z`, `aa`, `ab`, ...)
 
-주문서는 알파벳 소문자로 구성된 모든 문자열이 길이 순, 사전 순으로 정렬된 목록입니다.
-일부 주문이 `bans` 목록에 의해 삭제되었습니다.
-삭제된 주문을 제외하고 `n`번째에 위치하는 주문을 찾아야 합니다.
+이 중 일부 주문은 `bans` 리스트에 포함되어 봉인되었습니다. 봉인된 주문을 제외하고 `n`번째 주문을 찾아야 합니다.
 
-## 문제 분석
+## 문제 해결 전략
 
-1.  **주문서의 규칙**:
-    - 길이 1: "a" ~ "z" (26개)
-    - 길이 2: "aa" ~ "zz" (26^2개)
-    - ...
-    - 전체적으로 길이 우선, 그 다음 사전 순 정렬입니다.
-    - 이는 사실상 26진법 수 체계와 유사하지만, 자릿수가 늘어날 때마다 이전 길이의 모든 경우의 수를 더해주는 방식입니다.
+이 문제는 **수학적 카운팅**과 **이분 탐색**을 결합하여 해결할 수 있습니다. `n`이 최대 $10^{15}$로 매우 크기 때문에, 단순히 문자열을 나열하는 것은 불가능합니다.
 
-2.  **삭제된 주문 처리**:
-    - `bans`에 포함된 주문들을 건너뛰고 `n`번째를 세어야 합니다.
-    - `n`이 최대 $10^{15}$로 매우 크기 때문에, 하나씩 세는 시뮬레이션은 불가능합니다.
-    - `bans`의 길이는 최대 300,000입니다.
-    - 따라서 수학적 접근이 필요합니다.
+### 1. 자릿수(길이) 확정하기
+먼저 `n`번째 주문이 몇 글자인지 알아내야 합니다.
+- 길이가 $L$인 문자열의 전체 개수는 $26^L$개입니다.
+- `bans`에 포함된 문자열 중 길이가 $L$인 것의 개수를 뺍니다.
+- `n`에서 해당 길이의 유효한 문자열 개수를 빼가며, `n`이 0 이하가 되는 시점의 길이를 찾습니다.
 
-## 접근 방법
+### 2. 해당 길이 내에서의 순서 찾기
+길이가 $L$로 정해졌다면, 해당 길이의 전체 문자열 공간에서 `bans`를 고려했을 때 `n`번째인 문자열을 찾아야 합니다.
+이 과정은 **이분 탐색**으로 최적화할 수 있습니다.
+- 탐색 범위: $0$ ~ $26^L - 1$ (각 숫자는 길이 $L$의 문자열에 1:1 매핑됨)
+- `mid` 값을 문자열로 변환했을 때, 이보다 작거나 같은(사전 순) 봉인된 주문의 개수를 `cnt`라고 하면,
+- `mid`의 실제 순위(봉인 제외) = `mid - cnt + 1` (1-based index)
+- 이 순위가 목표 `n`과 같은지 확인하며 범위를 좁힙니다.
 
-### 1. 문자열 $\leftrightarrow$ 정수 변환 (1-based Indexing)
+### 3. 진법 변환
+숫자를 길이 $L$의 26진수 문자열로, 또는 그 반대로 변환하는 함수가 필요합니다. a=0, b=1, ... , z=25로 매핑하여 처리합니다.
 
-모든 가능한 주문 문자열에 1부터 시작하는 고유 번호를 부여할 수 있습니다.
-- "a" $\rightarrow$ 1
-- "z" $\rightarrow$ 26
-- "aa" $\rightarrow$ 27
-- ...
-
-변환 공식:
-- **String to Int**:
-  - 길이가 $L$인 문자열의 시작 번호는 $\sum_{i=1}^{L-1} 26^i + 1$ 입니다.
-  - 여기에 해당 문자열이 길이 $L$인 문자열들 중에서 몇 번째인지(0-based rank)를 더합니다.
-  - Rank는 26진법 변환과 동일하게 계산합니다. ($s[0] \times 26^{L-1} + s[1] \times 26^{L-2} + \dots$)
-
-- **Int to String**:
-  - 번호 $V$가 주어지면, 누적 합을 이용하여 길이를 먼저 찾습니다.
-  - 해당 길이 내에서의 순서(offset)를 구한 뒤, 이를 26진법으로 변환하여 문자로 바꿉니다.
-
-### 2. 타겟 번호 찾기
-
-우리가 찾아야 할 주문의 "원래 번호(삭제되지 않았을 때의 번호)"를 $X$라고 합시다.
-$X$번째 주문이 실제로는 삭제된 주문들을 제외하고 $n$번째여야 하므로, 다음 관계가 성립합니다.
-$$ X - (\text{count of bans} \le X) = n $$
-$$ X = n + (\text{count of bans} \le X) $$
-
-이를 구하기 위해 다음과 같이 반복적으로 접근할 수 있습니다.
-1. `curr = n`으로 시작합니다. (삭제된 주문이 없다면 $n$번째가 답이므로)
-2. `bans` 리스트를 정수로 변환하여 오름차순 정렬해 둡니다.
-3. 정렬된 `bans`를 순회하면서, 현재 `curr`보다 작거나 같은 삭제된 주문이 보일 때마다 `curr`를 1씩 증가시킵니다.
-   - 원리: 내 앞에 삭제된 주문이 하나 있으면, 나는 한 칸 뒤로 밀려나야 하기 때문입니다.
-   - `curr`가 증가하면, 이전에 `curr`보다 커서 카운트하지 않았던 삭제된 주문이 새로우 범위에 포함될 수 있습니다. 정렬된 리스트를 순차적으로 확인하면 이를 자연스럽게 처리할 수 있습니다.
-
-### 알고리즘
-
-1. `bans`의 모든 문자열을 정수로 변환하여 리스트 `B`를 만들고 정렬합니다.
-2. `curr = n`
-3. `B`의 각 원소 `b`에 대해:
-   - if `b <= curr`: `curr += 1`
-   - else: `break` (더 이상 `curr`에 영향을 주는 삭제된 주문은 없음)
-4. 최종 `curr` 값을 문자열로 변환하여 반환합니다.
-
-## Python 풀이
+## Python 코드
 
 ```python
 def solution(n, bans):
-    # 각 길이별로 가능한 문자열의 개수 누적합 미리 계산
-    # cum_counts[k] = 길이가 k 이하인 모든 문자열의 개수
-    cum_counts = [0] * 12
-    current_sum = 0
-    pow26 = [1] * 12
-    for i in range(1, 12):
-        pow26[i] = pow26[i-1] * 26
-        current_sum += pow26[i]
-        cum_counts[i] = current_sum
-
-    # 문자열을 1-based 인덱스로 변환하는 함수
-    def str_to_val(s):
-        L = len(s)
-        # 길이가 L보다 작은 모든 문자열의 개수를 더함
-        val = cum_counts[L-1]
-        
-        # 길이가 L인 문자열 내에서의 순서(0-based) 계산
-        rank = 0
-        for i, char in enumerate(s):
-            digit = ord(char) - ord('a')
-            rank += digit * pow26[L - 1 - i]
-        
-        # 1-based 인덱스로 반환
-        return val + rank + 1
-
-    # 1-based 인덱스를 문자열로 변환하는 함수
-    def val_to_str(v):
-        # 해당 인덱스가 속하는 길이 L 찾기
-        L = 1
-        while L <= 11:
-            if v <= cum_counts[L]:
-                break
-            L += 1
-        
-        # 길이가 L인 문자열 내에서의 순서(0-based)
-        rank = v - cum_counts[L-1] - 1
-        
-        # 26진법 변환
-        chars = []
-        for i in range(L):
-            power = pow26[L - 1 - i]
-            digit = rank // power
-            chars.append(chr(digit + ord('a')))
-            rank %= power
-        
-        return "".join(chars)
-
-    # bans 배열을 정수로 변환 후 정렬
-    ban_vals = []
+    # 1. 밴 리스트 정리: 길이별로 분류
+    bans_by_len = {}
     for b in bans:
-        ban_vals.append(str_to_val(b))
+        l = len(b)
+        if l not in bans_by_len:
+            bans_by_len[l] = []
+        bans_by_len[l].append(b)
     
-    ban_vals.sort()
-    
-    # n번째 유효한 주문 찾기
-    curr = n
-    for b in ban_vals:
-        if b <= curr:
-            curr += 1
-        else:
+    # bans 내에서 탐색을 위해 정렬해둠 (이분 탐색용)
+    for l in bans_by_len:
+        bans_by_len[l].sort()
+
+    # 숫자 -> 문자열 변환 함수 (0 -> 'a' ... 25 -> 'z')
+    def num_to_str(val, length):
+        res = []
+        for _ in range(length):
+            res.append(chr(ord('a') + val % 26))
+            val //= 26
+        return "".join(res[::-1])
+
+    # 문자열 -> 숫자 변환 함수
+    def str_to_num(s):
+        val = 0
+        for char in s:
+            val = val * 26 + (ord(char) - ord('a'))
+        return val
+
+    # 2. 목표 문자열의 길이(length) 찾기
+    length = 0
+    for l in range(1, 12): # 문제 조건 상 11글자 이하
+        total_count = 26**l
+        banned_count = len(bans_by_len.get(l, []))
+        valid_count = total_count - banned_count
+        
+        if n <= valid_count:
+            length = l
             break
+        n -= valid_count
+    
+    # 3. 이분 탐색으로 해당 길이 내에서 n번째 문자열 찾기
+    # 범위: 0 ~ 26^length - 1
+    left, right = 0, 26**length - 1
+    answer_val = 0
+    
+    current_bans = bans_by_len.get(length, [])
+    # bans를 숫자로 변환해둠
+    current_bans_nums = [str_to_num(b) for b in current_bans]
+
+    while left <= right:
+        mid = (left + right) // 2
+        
+        # mid값 이하인 ban된 숫자의 개수 찾기 (bisect_right)
+        from bisect import bisect_right
+        banned_cnt = bisect_right(current_bans_nums, mid)
+        
+        # 실제 순위 (1-based)
+        real_rank = mid - banned_cnt + 1
+        
+        if real_rank >= n:
+            answer_val = mid
+            right = mid - 1
+        else:
+            left = mid + 1
             
-    return val_to_str(curr)
+    return num_to_str(answer_val, length)
 ```
-
-## 복잡도 분석
-
-- **시간 복잡도**: $O(M \log M)$, 여기서 $M$은 `bans`의 길이입니다.
-    - 문자열 변환: 상수 시간 (길이 최대 11).
-    - 정렬: $O(M \log M)$.
-    - 선형 탐색: $O(M)$.
-- **공간 복잡도**: $O(M)$, 변환된 정수 리스트 저장 공간입니다.
