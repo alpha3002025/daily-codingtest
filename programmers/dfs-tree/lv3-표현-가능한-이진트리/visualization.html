@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이진트리 표현 가능성 시각화</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .info-panel {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-family: monospace;
+        }
+
+        .step-info {
+            margin: 5px 0;
+        }
+
+        .highlight {
+            color: #d63384;
+            font-weight: bold;
+        }
+
+        /* Tree Visualization */
+        .tree-container {
+            position: relative;
+            height: 400px;
+            overflow: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            padding-top: 40px;
+            background-color: #fff;
+        }
+
+        .node {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            position: absolute;
+            transition: all 0.5s;
+            z-index: 2;
+            border: 2px solid #ccc;
+            background-color: white;
+            color: #ccc;
+        }
+
+        .node.one {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #388E3C;
+        }
+
+        .node.zero {
+            background-color: #f5f5f5;
+            color: #bbb;
+            border-color: #ddd;
+            border-style: dashed;
+        }
+
+        /* Animation States */
+        .node.checking {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
+            border-color: #2196F3;
+        }
+
+        .node.error-parent {
+            background-color: #ffcdd2;
+            /* Red background for 0-prent */
+            border-color: #f44336;
+            color: #d32f2f;
+        }
+
+        .node.error-child {
+            background-color: #ff5252;
+            border-color: #b71c1c;
+            color: white;
+            animation: shake 0.5s;
+        }
+
+        .node.valid {
+            border-width: 3px;
+        }
+
+        .edge {
+            position: absolute;
+            background-color: #eee;
+            transform-origin: top left;
+            z-index: 1;
+            transition: background-color 0.3s;
+        }
+
+        .edge.checking {
+            background-color: #2196F3;
+            height: 2px !important;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .status-msg {
+            margin-top: 20px;
+            font-weight: bold;
+            height: 24px;
+        }
+
+        .status-success {
+            color: #2e7d32;
+        }
+
+        .status-fail {
+            color: #c62828;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🌲 표현 가능한 이진트리 시각화</h1>
+
+        <div class="input-group">
+            <input type="number" id="inputNum" placeholder="십진수 입력 (예: 58)" value="58">
+            <button onclick="initAndRun()">트리 생성</button>
+        </div>
+
+        <div class="input-group">
+            <button id="btnPrev" onclick="step(-1)" disabled>◀ Prev</button>
+            <button id="btnPlay" onclick="togglePlay()">▶ Play</button>
+            <button id="btnNext" onclick="step(1)" disabled>Next ▶</button>
+        </div>
+
+        <div class="info-panel" id="infoPanel">
+            <div class="step-info">숫자를 입력하고 '트리 생성'을 누르세요.</div>
+        </div>
+
+        <div class="legend">
+            <div><span class="dot" style="background-color: #4CAF50;"></span>1 (노드 있음)</div>
+            <div><span class="dot" style="background-color: #f5f5f5; border: 1px dashed #ccc;"></span>0 (노드 없음)</div>
+            <div><span class="dot" style="background-color: #2196F3;"></span>검사 중</div>
+            <div><span class="dot" style="background-color: #ff5252;"></span>오류 (부모0-자식1)</div>
+        </div>
+
+        <div class="tree-container" id="treeContainer"></div>
+        <div class="status-msg" id="statusMsg"></div>
+
+        <div style="margin-top: 10px;">
+            <label>속도: <input type="range" id="speed" min="100" max="2000" step="100" value="800"
+                    oninput="updateSpeed(this.value)"></label>
+            <span id="speedVal">0.8s</span>
+        </div>
+    </div>
+
+    <script>
+        let animationSpeed = 800;
+        let isPlaying = false;
+        let playTimer = null;
+        let steps = [];
+        let currentStepIdx = -1;
+        let map = []; // Node map
+        let paddedBinGlobal = "";
+
+        function updateSpeed(val) {
+            animationSpeed = 2100 - val;
+            document.getElementById('speedVal').innerText = (animationSpeed / 1000).toFixed(1) + 's';
+        }
+
+        // 초기화 및 트리 그리기
+        function initAndRun() {
+            stopPlay();
+            currentStepIdx = -1;
+            steps = [];
+            map = [];
+
+            const numInput = document.getElementById('inputNum').value;
+            const num = BigInt(numInput);
+            const infoPanel = document.getElementById('infoPanel');
+            const treeContainer = document.getElementById('treeContainer');
+            const statusMsg = document.getElementById('statusMsg');
+
+            treeContainer.innerHTML = '';
+            statusMsg.innerText = '';
+            statusMsg.className = 'status-msg';
+
+            // 1. 이진수 변환
+            let binStr = num.toString(2);
+            let len = binStr.length;
+
+            // 2. 패딩 계산
+            let h = 0;
+            while ((Math.pow(2, h) - 1) < len) {
+                h++;
+            }
+            let fullLen = Math.pow(2, h) - 1;
+            let paddedBin = binStr.padStart(fullLen, '0');
+            paddedBinGlobal = paddedBin;
+
+            // 정보 표시
+            infoPanel.innerHTML = `
+                <div class="step-info">1. 십진수: <span class="highlight">${num}</span></div>
+                <div class="step-info">2. 이진수: <span class="highlight">${binStr}</span> (길이: ${len})</div>
+                <div class="step-info">3. 포화 이진트리 길이: <span class="highlight">${fullLen}</span> (높이: ${h})</div>
+                <div class="step-info">4. 패딩 결과: <span class="highlight">${paddedBin}</span></div>
+            `;
+
+            // 트리 그리기
+            const width = treeContainer.offsetWidth;
+            const initialDx = width / 4;
+
+            drawNode(0, fullLen - 1, 1, width / 2 - 20, 20, initialDx, paddedBin);
+            drawEdges(0, fullLen - 1, 1, null, null, initialDx);
+
+            // 검사 단계(Steps) 미리 생성
+            generateSteps(0, fullLen - 1, '1'); // 가상 부모 '1'
+
+            // 버튼 상태 업데이트
+            updateButtons();
+        }
+
+        function drawNode(start, end, level, x, y, dx, paddedBin) {
+            if (start > end) return;
+
+            const mid = Math.floor((start + end) / 2);
+            const val = paddedBin[mid];
+
+            const nodeEl = document.createElement('div');
+            nodeEl.className = `node ${val === '1' ? 'one' : 'zero'}`;
+            nodeEl.innerText = mid;
+            nodeEl.style.left = `${x}px`;
+            nodeEl.style.top = `${y}px`;
+
+            document.getElementById('treeContainer').appendChild(nodeEl);
+            map[mid] = { el: nodeEl, val: val, x: x, y: y };
+
+            const nextY = y + 60;
+            const nextDx = dx / 2;
+
+            drawNode(start, mid - 1, level + 1, x - dx, nextY, nextDx, paddedBin);
+            drawNode(mid + 1, end, level + 1, x + dx, nextY, nextDx, paddedBin);
+        }
+
+        function drawEdges(start, end, level, parentX, parentY, dx) {
+            if (start > end) return;
+            const mid = Math.floor((start + end) / 2);
+
+            if (parentX !== null) {
+                const edge = document.createElement('div');
+                edge.className = 'edge';
+
+                const deltaX = (map[mid].x + 20) - (parentX + 20);
+                const deltaY = (map[mid].y + 20) - (parentY + 20);
+                const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+
+                edge.style.width = `${dist}px`;
+                edge.style.height = `1px`;
+                edge.style.left = `${parentX + 20}px`;
+                edge.style.top = `${parentY + 20}px`;
+                edge.style.transform = `rotate(${angle}deg)`;
+
+                const container = document.getElementById('treeContainer');
+                container.insertBefore(edge, container.firstChild);
+            }
+
+            const nextDx = dx / 2;
+            drawEdges(start, mid - 1, level + 1, map[mid].x, map[mid].y, nextDx);
+            drawEdges(mid + 1, end, level + 1, map[mid].x, map[mid].y, nextDx);
+        }
+
+        // 검사 로직 시뮬레이션 및 단계 기록
+        function generateSteps(start, end, parentVal) {
+            if (start > end) return true;
+
+            const mid = Math.floor((start + end) / 2);
+            const currentVal = paddedBinGlobal[mid];
+
+            // Step: Checking start
+            steps.push({
+                type: 'check_start',
+                nodeIdx: mid,
+                msg: `Node[${mid}] 검사: 값=${currentVal}, 부모=${parentVal}`
+            });
+
+            // 규칙 검사
+            if (parentVal === '0' && currentVal === '1') {
+                steps.push({
+                    type: 'error',
+                    nodeIdx: mid,
+                    msg: `오류 발견! 부모가 0인데 자식(Node[${mid}])이 1입니다.`
+                });
+                return false;
+            }
+
+            // Step: Node Validated (temporarily, pending children)
+            steps.push({
+                type: 'mark_valid',
+                nodeIdx: mid,
+                msg: `Node[${mid}] 통과. 자식 검사 진행...`
+            });
+
+            // 자식 검사
+            const leftRes = generateSteps(start, mid - 1, currentVal); // 왼쪽 자식에게 현재 값을 부모값으로 전달
+            // 만약 왼쪽에서 실패했더라도 전체 과정을 보여주기 위해 계속 진행할지, 중단할지 결정
+            // 여기서는 문제 풀이 로직과 동일하게 False면 즉시 중단되는 흐름(AND 연산)을 따르되,
+            // 시각화에서는 에러 난 곳을 보여주고 멈추는 게 나음.
+            if (!leftRes) return false;
+
+            const rightRes = generateSteps(mid + 1, end, currentVal);
+            if (!rightRes) return false;
+
+            return true;
+        }
+
+        // --- 재생 및 네비게이션 로직 ---
+
+        function togglePlay() {
+            if (isPlaying) stopPlay();
+            else startPlay();
+        }
+
+        function startPlay() {
+            if (currentStepIdx >= steps.length - 1) {
+                // 이미 끝이면 처음부터? 혹은 리셋
+                if (currentStepIdx > -1) resetVis(); // Reset if not initial state
+            }
+            isPlaying = true;
+            document.getElementById('btnPlay').innerText = "⏸ Pause";
+            runTimer();
+        }
+
+        function stopPlay() {
+            isPlaying = false;
+            document.getElementById('btnPlay').innerText = "▶ Play";
+            if (playTimer) clearTimeout(playTimer);
+            playTimer = null;
+        }
+
+        function runTimer() {
+            if (!isPlaying) return;
+            if (currentStepIdx < steps.length - 1) {
+                step(1);
+                playTimer = setTimeout(runTimer, animationSpeed);
+            } else {
+                stopPlay();
+            }
+        }
+
+        function step(dir) {
+            const nextIdx = currentStepIdx + dir;
+            if (nextIdx < -1 || nextIdx >= steps.length) return;
+
+            if (dir > 0) {
+                // Forward: Apply next step
+                applyStep(steps[nextIdx]);
+            } else {
+                // Backward: Revert current step
+                revertStep(steps[currentStepIdx]);
+            }
+            currentStepIdx = nextIdx;
+            updateButtons();
+        }
+
+        function applyStep(s) {
+            const node = map[s.nodeIdx].el;
+            const msgPanel = document.getElementById('statusMsg');
+
+            msgPanel.innerText = s.msg;
+
+            if (s.type === 'check_start') {
+                node.classList.add('checking');
+            } else if (s.type === 'error') {
+                node.classList.remove('checking');
+                node.classList.add('error-child');
+                msgPanel.className = "status-msg status-fail";
+            } else if (s.type === 'mark_valid') {
+                node.classList.remove('checking');
+                node.classList.add('valid');
+            }
+        }
+
+        function revertStep(s) {
+            const node = map[s.nodeIdx].el;
+            const msgPanel = document.getElementById('statusMsg');
+            msgPanel.innerText = "";
+            msgPanel.className = "status-msg";
+
+            if (s.type === 'check_start') {
+                node.classList.remove('checking');
+            } else if (s.type === 'error') {
+                node.classList.remove('error-child');
+                // Revert to checking state of this node, which was the previous step
+                node.classList.add('checking');
+            } else if (s.type === 'mark_valid') {
+                node.classList.remove('valid');
+                // Revert to checking state, which was the previous step
+                node.classList.add('checking');
+            }
+
+            // 이전 스텝의 메시지 복원이 필요할 수 있지만, 간단히 비움.
+            // 정확한 역방향 진행을 위해서는 상태 스냅샷이 필요하나,
+            // 여기서는 단순 클래스 토글 역연산으로 처리. 
+            // 단, 연속된 스텝에서 상태가 덮어씌워질 수 있으므로 주의 필요.
+            // checking -> valid 순서이므로, valid를 revert하면 checking이 되어야 함.
+        }
+
+        // 역방향 시 완벽한 상태 복원을 위해 reset 후 fast-forward가 안전하지만,
+        // 성능상 단순 클래스 조작으로 구현.
+        // 문제점: 'mark_valid'를 revert하면 'check_start' 상태(checking 클래스)로 돌아가야 함.
+        // 현재 로직에 추가함.
+
+        function resetVis() {
+            stopPlay();
+            currentStepIdx = -1;
+            // 모든 노드 스타일 초기화
+            for (let i in map) {
+                map[i].el.className = `node ${map[i].val === '1' ? 'one' : 'zero'}`;
+            }
+            document.getElementById('statusMsg').innerText = "";
+            document.getElementById('statusMsg').className = "status-msg";
+            updateButtons();
+        }
+
+        function updateButtons() {
+            document.getElementById('btnPrev').disabled = currentStepIdx < 0;
+            document.getElementById('btnNext').disabled = currentStepIdx >= steps.length - 1;
+
+            // 마지막 스텝 도달 시 결과 메시지 고정
+            if (currentStepIdx === steps.length - 1 && steps.length > 0) {
+                const lastStep = steps[steps.length - 1];
+                if (lastStep.type !== 'error') {
+                    document.getElementById('statusMsg').innerHTML = "✅ 검사 완료: 표현 가능한 이진트리입니다!";
+                    document.getElementById('statusMsg').className = "status-msg status-success";
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
