@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>단어 퍼즐 DP 시각화</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex-grow: 1;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Visualization Area */
+        .vis-area {
+            margin-top: 30px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+
+        .dp-row {
+            display: flex;
+            margin-bottom: 20px;
+            min-width: max-content;
+        }
+
+        .cell-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 2px;
+            width: 50px;
+            position: relative;
+        }
+
+        .char-cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+
+        .index-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .dp-cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #4CAF50;
+            border-radius: 50%;
+            background-color: #e8f5e9;
+            color: #2E7D32;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        /* States */
+        .cell-container.active .char-cell {
+            background-color: #ffeb3b;
+            border-color: #fbc02d;
+            transform: scale(1.1);
+        }
+
+        .cell-container.checking .char-cell {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .highlight-substr {
+            background-color: #bbdefb !important;
+            border-color: #1976d2 !important;
+        }
+
+        .dp-cell.updated {
+            background-color: #ff5722;
+            color: white;
+            border-color: #e64a19;
+            animation: pulse 0.5s;
+        }
+
+        .dp-cell.referenced {
+            border-color: #9c27b0;
+            border-width: 3px;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Log Panel */
+        .log-panel {
+            background-color: #212121;
+            color: #00e676;
+            padding: 15px;
+            border-radius: 8px;
+            height: 150px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            border: 1px solid #424242;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 2px;
+        }
+
+        .log-highlight {
+            color: #ffeb3b;
+            font-weight: bold;
+        }
+
+        .log-success {
+            color: #40c4ff;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧩 단어 퍼즐 DP 시각화</h1>
+
+        <div class="input-group">
+            <div style="flex: 2;">
+                <label for="strs">단어 조각들 (콤마로 구분):</label>
+                <input type="text" id="strs" value="ba, na, n, a" placeholder="예: ba, na, n, a">
+            </div>
+            <div style="flex: 2;">
+                <label for="t">목표 문자열 (t):</label>
+                <input type="text" id="t" value="banana" placeholder="예: banana">
+            </div>
+        </div>
+
+        <div class="input-group" style="justify-content: center;">
+            <button id="btn-start" onclick="startVisualization()">시작</button>
+            <button id="btn-pause" onclick="togglePause()" disabled>일시정지</button>
+            <button id="btn-step" onclick="stepForward()" disabled>다음 단계</button>
+            <button id="btn-reset" onclick="resetVisualization()">초기화</button>
+            <div style="display: flex; align-items: center; margin-left: 20px;">
+                <label for="speed">속도:</label>
+                <input type="range" id="speed" min="100" max="2000" step="100" value="1000" style="width: 100px;">
+                <span id="speed-val">1.0s</span>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="dp-cell" style="width:15px; height:15px;"></div>DP 값 (최소 조각 수)
+            </div>
+            <div class="legend-item">
+                <div class="char-cell" style="width:15px; height:15px; background-color:#ffeb3b;"></div>현재 인덱스 (i)
+            </div>
+            <div class="legend-item">
+                <div class="char-cell" style="width:15px; height:15px; background-color:#bbdefb;"></div>탐색 중인 조각 (sub)
+            </div>
+            <div class="legend-item">
+                <div class="dp-cell" style="width:15px; height:15px; background-color:#ff5722; border-color:#e64a19;">
+                </div>값 갱신
+            </div>
+        </div>
+
+        <div class="vis-area" id="vis-area">
+            <!-- 동적 생성됨 -->
+        </div>
+
+        <div class="log-panel" id="log-panel">
+            <div class="log-entry">준비 완료. 시작 버튼을 눌러주세요.</div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let strs = [];
+        let wordSet = new Set();
+        let targetStr = "";
+        let dp = [];
+        let isRunning = false;
+        let isPaused = false;
+        let currentStepGen = null; // 제너레이터
+        let timer = null;
+        let speed = 1000;
+
+        const INF = 999;
+
+        // 초기화
+        document.getElementById('speed').addEventListener('input', function (e) {
+            speed = 2100 - parseInt(e.target.value); // 슬라이더 값 반전 (오른쪽이 빠름)
+            document.getElementById('speed-val').innerText = (speed / 1000).toFixed(1) + 's';
+        });
+
+        // 로그 출력
+        function log(msg, type = '') {
+            const panel = document.getElementById('log-panel');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            if (type === 'highlight') entry.classList.add('log-highlight');
+            if (type === 'success') entry.classList.add('log-success');
+            entry.innerHTML = `> ${msg}`;
+            panel.appendChild(entry);
+            panel.scrollTop = panel.scrollHeight;
+        }
+
+        // 시각화 초기화
+        function initDisplay() {
+            const area = document.getElementById('vis-area');
+            area.innerHTML = '';
+
+            const dpRow = document.createElement('div');
+            dpRow.className = 'dp-row';
+
+            // DP 배열 및 문자열 표시 (길이 n+1, 인덱스 0은 빈문자열)
+            // 시각적으로 0번 인덱스(Base Case)부터 n번까지 표시
+
+            for (let i = 0; i <= targetStr.length; i++) {
+                const container = document.createElement('div');
+                container.className = 'cell-container';
+                container.id = `col-${i}`;
+
+                // 인덱스
+                const idxLabel = document.createElement('div');
+                idxLabel.className = 'index-label';
+                idxLabel.innerText = i;
+                container.appendChild(idxLabel);
+
+                // 문자 (i=0은 빈칸, i>=1은 t[i-1])
+                const charCell = document.createElement('div');
+                charCell.className = 'char-cell';
+                charCell.innerText = i === 0 ? 'Ø' : targetStr[i - 1];
+                charCell.id = `char-${i}`;
+                container.appendChild(charCell);
+
+                // DP 값
+                const dpCell = document.createElement('div');
+                dpCell.className = 'dp-cell';
+                dpCell.innerText = i === 0 ? 0 : '∞'; // 초기값
+                dpCell.id = `dp-${i}`;
+                container.appendChild(dpCell);
+
+                dpRow.appendChild(container);
+            }
+            area.appendChild(dpRow);
+        }
+
+        function resetVisualization() {
+            stopTimer();
+            isRunning = false;
+            isPaused = false;
+            currentStepGen = null;
+            document.getElementById('btn-start').disabled = false;
+            document.getElementById('btn-pause').disabled = true;
+            document.getElementById('btn-step').disabled = true;
+            document.getElementById('btn-pause').innerText = '일시정지';
+
+            // 입력값 파싱
+            const strsInput = document.getElementById('strs').value;
+            strs = strsInput.split(',').map(s => s.trim()).filter(s => s);
+            wordSet = new Set(strs);
+            targetStr = document.getElementById('t').value.trim();
+
+            dp = new Array(targetStr.length + 1).fill(INF);
+            dp[0] = 0;
+
+            initDisplay();
+            document.getElementById('log-panel').innerHTML = '<div class="log-entry">초기화 완료.</div>';
+        }
+
+        function* algorithmSteps() {
+            const n = targetStr.length;
+
+            log(`알고리즘 시작: 목표 "${targetStr}", 단어집 [${Array.from(wordSet).join(', ')}]`);
+            log(`DP 배열 초기화 완료. dp[0] = 0, 나머지는 ∞`);
+            yield; // 초기 상태 보여줌
+
+            for (let i = 1; i <= n; i++) {
+                // 현재 인덱스 i 활성화
+                highlightColumn(i, 'active');
+                log(`<strong>i = ${i}</strong> (문자: '${targetStr[i - 1]}') 탐색 시작`, 'highlight');
+                yield;
+
+                let minVal = INF;
+
+                // k는 1~5 (단어 조각 길이)
+                for (let k = 1; k <= 5; k++) {
+                    if (i - k < 0) break;
+
+                    const startIdx = i - k;
+                    const sub = targetStr.substring(startIdx, i);
+
+                    // 부분 문자열 영역 하이라이트
+                    highlightRange(startIdx + 1, i, 'highlight-substr');
+                    log(`..길이 ${k} 확인: "<strong>${sub}</strong>" (t[${startIdx}..${i - 1}])`);
+                    yield;
+
+                    // 단어 집합에 있는지 확인
+                    if (wordSet.has(sub)) {
+                        log(`..Found! "${sub}" 단어집에 있음.`, 'success');
+
+                        // 이전 DP 참조 시각화
+                        highlightDp(startIdx, 'referenced');
+
+                        const prevDp = dp[startIdx];
+                        if (prevDp !== INF) {
+                            const candidate = prevDp + 1;
+                            const currentDp = dp[i];
+
+                            log(`....이전 비용 dp[${startIdx}](${prevDp}) + 1 = ${candidate}`);
+                            log(`....현재 dp[${i}](${currentDp})와 비교`);
+
+                            if (candidate < currentDp) {
+                                dp[i] = candidate;
+                                updateDpDisplay(i, candidate);
+                                log(`....갱신! dp[${i}] = ${candidate}`, 'success');
+                            } else {
+                                log(`....갱신 안함 (기존 값이 더 작거나 같음)`);
+                            }
+                        } else {
+                            log(`....이전 단계 dp[${startIdx}]가 도달 불가(∞)라 패스`);
+                        }
+                        yield; // 갱신 후 잠시 대기
+                        clearDpHighlight(startIdx);
+                    } else {
+                        // 없으면 그냥 넘어감
+                        // log(`..Checking "${sub}" -> Not found`);
+                    }
+
+                    // 하이라이트 해제
+                    clearHighlightRange(startIdx + 1, i, 'highlight-substr');
+                }
+
+                // i번째 단계 완료
+                clearHighlight(i, 'active');
+                if (dp[i] === INF) {
+                    log(`i = ${i} 단계 종료. 갱신 실패 (값: ∞)`);
+                } else {
+                    log(`i = ${i} 단계 종료. 확정 값: ${dp[i]}`);
+                }
+                yield;
+            }
+
+            // 결과 도출
+            const finalResult = dp[n] === INF ? -1 : dp[n];
+            log(`최종 결과: ${finalResult}`, 'highlight');
+
+            if (finalResult === -1) {
+                alert("탐색 종료: 완성 불가능 (-1)");
+            } else {
+                alert(`탐색 종료: 최소 조각 수 = ${finalResult}`);
+            }
+
+            stopTimer();
+            document.getElementById('btn-start').disabled = false;
+            document.getElementById('btn-pause').disabled = true;
+            document.getElementById('btn-step').disabled = true;
+        }
+
+        // --- 시각화 헬퍼 함수 ---
+        function highlightColumn(idx, className) {
+            document.getElementById(`col-${idx}`).classList.add(className);
+        }
+        function clearHighlight(idx, className) {
+            document.getElementById(`col-${idx}`).classList.remove(className);
+        }
+        function highlightRange(start, end, className) {
+            for (let i = start; i <= end; i++) {
+                document.getElementById(`char-${i}`).classList.add(className);
+            }
+        }
+        function clearHighlightRange(start, end, className) {
+            for (let i = start; i <= end; i++) {
+                document.getElementById(`char-${i}`).classList.remove(className);
+            }
+        }
+        function highlightDp(idx, className) {
+            document.getElementById(`dp-${idx}`).classList.add(className);
+        }
+        function clearDpHighlight(idx) {
+            document.getElementById(`dp-${idx}`).classList.remove('referenced');
+        }
+        function updateDpDisplay(idx, val) {
+            const el = document.getElementById(`dp-${idx}`);
+            el.innerText = val;
+            el.classList.add('updated');
+            setTimeout(() => el.classList.remove('updated'), 500);
+        }
+
+        // --- 제어 로직 ---
+        function startVisualization() {
+            resetVisualization(); // 데이터 리셋 및 UI 초기화
+
+            isRunning = true;
+            document.getElementById('btn-start').disabled = true;
+            document.getElementById('btn-pause').disabled = false;
+            document.getElementById('btn-step').disabled = false;
+
+            currentStepGen = algorithmSteps();
+            runTimer();
+        }
+
+        function runTimer() {
+            const nextStep = () => {
+                if (!isRunning || isPaused) return;
+
+                const res = currentStepGen.next();
+                if (res.done) {
+                    isRunning = false;
+                    return;
+                }
+
+                timer = setTimeout(nextStep, speed);
+            };
+            nextStep();
+        }
+
+        function stopTimer() {
+            if (timer) {
+                clearTimeout(timer);
+                timer = null;
+            }
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('btn-pause');
+            if (isPaused) {
+                btn.innerText = '재개';
+                stopTimer();
+            } else {
+                btn.innerText = '일시정지';
+                runTimer();
+            }
+        }
+
+        function stepForward() {
+            if (!isRunning) return;
+            // 일시정지 상태여야 한 단계씩 수동 진행 가능
+            if (!isPaused) {
+                togglePause(); // 자동으로 일시정지로 전환
+            }
+
+            const res = currentStepGen.next();
+            if (res.done) {
+                isRunning = false;
+                document.getElementById('btn-step').disabled = true;
+            }
+        }
+
+        // 초기 실행
+        resetVisualization();
+
+    </script>
+</body>
+
+</html>
