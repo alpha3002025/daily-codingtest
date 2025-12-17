@@ -1,4 +1,17 @@
 # [3차] 방금그곡
+## 참고
+**34번 Test Case Fail 증상**<br/>
+Test Case 중 34번 Test Case 가 굉장히 더티했는데 Gemini 는 그걸 찾아냈다. Gemini 가 더 무서워졌다...<br/>
+<br/>
+
+해결방식<br/>
+`B#`과 `E#`도 replace 함수에 포함하여 1글자로 치환되도록 수정했습니다.<br/>
+- 변경 전: C#, D#, F#, G#, A#만 치환
+- 변경 후: B# -> b, E# -> e 추가
+
+<br/>
+<br/>
+
 
 ## 문제 설명
 라디오에서 들은 멜로디 `m`이 재생된 음악 중에 있는지 찾는 문제입니다.
@@ -19,8 +32,8 @@
 def replace_sharp(s):
     # #이 붙은 음을 소문자로 치환하여 1글자로 만듦
     # C# -> c, D# -> d, F# -> f, G# -> g, A# -> a
-    # E# 같은 건 없음 (문제 조건)
-    return s.replace('C#', 'c').replace('D#', 'd').replace('F#', 'f').replace('G#', 'g').replace('A#', 'a')
+    # B# -> b, E# -> e (문제 조건에는 없으나 테스트 케이스 34번 등에서 등장함)
+    return s.replace('C#', 'c').replace('D#', 'd').replace('F#', 'f').replace('G#', 'g').replace('A#', 'a').replace('B#', 'b').replace('E#', 'e')
 
 def get_minutes(time_str):
     h, m = map(int, time_str.split(':'))
