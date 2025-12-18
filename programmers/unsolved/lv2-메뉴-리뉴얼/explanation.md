@@ -54,3 +54,108 @@ def solution(orders, course):
     - 같은 `max_count`를 가진 메뉴가 여러 개일 수 있으므로(공동 1등), 순회하며 다 넣어줍니다.
 - 조건 체크: `max_count >= 2` 이어야 합니다.
 - 마지막에 전체 정답 리스트를 정렬하여 반환합니다.
+
+## 참고 문법
+
+### itertools 모듈의 주요 함수
+
+1.  **`combinations(iterable, r)`**: 조합
+    -   순서 고려 X (`AB` == `BA`)
+    -   중복 허용 X
+```python
+# "abc" 중 2개 뽑기: ab, ac, bc
+str = "abc"
+comb = combinations(str, 2)
+for combination in comb:
+    print(combination)
+"""
+('a', 'b')
+('a', 'c')
+('b', 'c')
+"""
+```
+
+2.  **`permutations(iterable, r)`**: 순열
+    -   순서 고려 O (`AB` != `BA`)
+    -   중복 허용 X
+```python
+# "abc" 중 2개 뽑아 나열: ab, ac, ba, bc, ca, cb
+
+from itertools import permutations
+str = "abc"
+
+for p in permutations(str, 2):
+    print(p)
+
+"""
+('a', 'b')
+('a', 'c')
+('b', 'a')
+('b', 'c')
+('c', 'a')
+('c', 'b')
+"""
+```
+<br/>
+
+3.  **`product(iterable, repeat=r)`**: 중복 순열 (데카르트 곱)
+    -   순서 고려 O, 같은 원소 중복 선택 O (`AA`, `AB`...)
+    -   `repeat`로 몇 번 뽑을지 지정
+
+```python
+# "abc" 중 중복 허용해 2개 뽑기
+
+from itertools import product
+
+str = "abc"
+
+for p in product(str, repeat=2):
+    print(p)
+"""
+('a', 'a')
+('a', 'b')
+('a', 'c')
+('b', 'a')
+('b', 'b')
+('b', 'c')
+('c', 'a')
+('c', 'b')
+('c', 'c')
+"""
+
+print(">>>>>>>")
+for p in product(str, repeat=3):
+    print(p)
+
+"""
+('a', 'a', 'a')
+('a', 'a', 'b')
+('a', 'a', 'c')
+('a', 'b', 'a')
+('a', 'b', 'b')
+('a', 'b', 'c')
+('a', 'c', 'a')
+('a', 'c', 'b')
+('a', 'c', 'c')
+('b', 'a', 'a')
+('b', 'a', 'b')
+('b', 'a', 'c')
+('b', 'b', 'a')
+('b', 'b', 'b')
+('b', 'b', 'c')
+('b', 'c', 'a')
+('b', 'c', 'b')
+('b', 'c', 'c')
+('c', 'a', 'a')
+('c', 'a', 'b')
+('c', 'a', 'c')
+('c', 'b', 'a')
+('c', 'b', 'b')
+('c', 'b', 'c')
+('c', 'c', 'a')
+('c', 'c', 'b')
+('c', 'c', 'c')
+```
+
+
+
