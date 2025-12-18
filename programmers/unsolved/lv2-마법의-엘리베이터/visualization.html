@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마법의 엘리베이터 시각화</title>
+    <style>
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f7;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1d1d1f;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: #0071e3;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0077ed;
+        }
+
+        .step-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .step-box {
+            background: #fbfbfd;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            padding: 15px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .step-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .arrow {
+            font-size: 24px;
+            color: #86868b;
+        }
+
+        .number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1d1d1f;
+        }
+
+        .action {
+            font-weight: bold;
+            color: #0071e3;
+            margin: 5px 0;
+        }
+
+        .desc {
+            font-size: 14px;
+            color: #86868b;
+        }
+
+        .cost-badge {
+            display: inline-block;
+            background-color: #ff3b30;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .total-box {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+            font-weight: bold;
+            color: #0071e3;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>마법의 엘리베이터 (층수 변화 시각화)</h1>
+
+    <div class="card">
+        <h3>핵심 원리: 반올림 (Rounding)</h3>
+        <p>각 자릿수를 0으로 만들기 위해 <strong>내림(Down)</strong>할지 <strong>올림(Up)</strong>할지 결정합니다.</p>
+        <ul>
+            <li><strong>0 ~ 4</strong>: 내림이 이득 (버림)</li>
+            <li><strong>6 ~ 9</strong>: 올림이 이득 (반올림)</li>
+            <li><strong>5</strong>: 윗자리가 5 이상이면 올림, 미만이면 내림 결정 (연쇄 작용 고려)</li>
+        </ul>
+    </div>
+
+    <div class="btn-group">
+        <button onclick="showCase(45)">Case 45</button>
+        <button onclick="showCase(55)">Case 55</button>
+        <button onclick="showCase(95)">Case 95</button>
+        <button onclick="showCase(16)">Case 16</button>
+    </div>
+
+    <div id="visualization" class="step-container">
+        <!-- Steps will be injected here -->
+        <div style="text-align: center; color: #86868b; margin-top: 20px;">
+            버튼을 눌러 각 케이스별 층수 변화 과정을 확인하세요.
+        </div>
+    </div>
+
+    <script>
+        const scenarios = {
+            45: [
+                { num: 45, action: "시작", desc: "초기 층수", cost: 0 },
+                { num: 40, action: "일의 자리 5 처리 (내림)", desc: "윗자리(4) < 5 이므로 5를 내림 선택 (-5)", cost: 5 },
+                { num: 0, action: "십의 자리 4 처리 (내림)", desc: "4를 내림 선택 (-40)", cost: 4, total: 9 }
+            ],
+            55: [
+                { num: 55, action: "시작", desc: "초기 층수", cost: 0 },
+                { num: 60, action: "일의 자리 5 처리 (올림)", desc: "윗자리(5) >= 5 이므로 올림 선택 (+5)", cost: 5 },
+                { num: 100, action: "십의 자리 6 처리 (올림)", desc: "6 >= 5 이므로 올림 선택 (+40)", cost: 4 },
+                { num: 0, action: "백의 자리 1 처리 (내림)", desc: "1을 내림 선택 (-100)", cost: 1, total: 10 }
+            ],
+            95: [
+                { num: 95, action: "시작", desc: "초기 층수", cost: 0 },
+                { num: 100, action: "일의 자리 5 처리 (올림)", desc: "윗자리(9) >= 5 이므로 올림 선택 (+5)", cost: 5 },
+                { num: 0, action: "백의 자리 1 처리 (내림)", desc: "1을 내림 선택 (-100)", cost: 1, total: 6 }
+            ],
+            16: [
+                { num: 16, action: "시작", desc: "초기 층수", cost: 0 },
+                { num: 20, action: "일의 자리 6 처리 (올림)", desc: "6 > 5 이므로 올림 선택 (+4)", cost: 4 },
+                { num: 0, action: "십의 자리 2 처리 (내림)", desc: "2를 내림 선택 (-20)", cost: 2, total: 6 }
+            ]
+        };
+
+        function showCase(caseNum) {
+            const container = document.getElementById('visualization');
+            container.innerHTML = '';
+
+            const steps = scenarios[caseNum];
+            let currentTotal = 0;
+
+            steps.forEach((step, index) => {
+                if (index > 0) {
+                    const arrow = document.createElement('div');
+                    arrow.className = 'arrow';
+                    arrow.innerHTML = '↓';
+                    container.appendChild(arrow);
+                }
+
+                const box = document.createElement('div');
+                box.className = 'step-box';
+                if (index > 0) currentTotal += step.cost;
+
+                let html = `
+                    <div class="number">${step.num}</div>
+                    <div class="action">${step.action}</div>
+                    <div class="desc">${step.desc}</div>
+                `;
+
+                if (step.cost > 0) {
+                    html += `<div><span class="cost-badge">+${step.cost}</span></div>`;
+                }
+
+                if (step.total !== undefined) {
+                    html += `<div class="total-box">🎉 총 버튼 횟수: ${step.total}</div>`;
+                }
+
+                box.innerHTML = html;
+                container.appendChild(box);
+            });
+        }
+    </script>
+</body>
+
+</html>
