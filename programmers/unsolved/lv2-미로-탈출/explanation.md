@@ -1,4 +1,8 @@
 # 미로 탈출
+이 문제는 Gemini 의 풀이보다 이전에 풀었던 풀이가 더 직관적이다.<br/>
+근데... 시험에 board 탐색하는 문제가 굳이 나올까?<br/>
+<br/>
+
 
 ## 문제 설명
 직사각형 격자 형태의 미로에서 출발 지점(`S`)에서 레버(`L`)를 당긴 후, 출구(`E`)로 탈출해야 합니다.
@@ -17,6 +21,63 @@
 3.  두 거리의 합이 정답입니다. 둘 중 하나라도 도달할 수 없다면 `-1`입니다.
 
 한 번의 BFS로 상태(레버 당김 여부)를 포함하여 visited 배열을 3차원(`visited[row][col][has_lever]`)으로 관리할 수도 있지만, 단순히 목적지가 다른 두 번의 BFS가 구현하기 더 직관적이고 간단합니다.
+
+## my
+이 풀이가 더 직관적이다.
+```python
+from collections import deque
+
+def solution(maps):
+    answer = 0
+    
+    lever = (0,0)
+    exit = (0,0)
+    start = (0,0)
+    
+    for r in range(len(maps)):
+        for c in range(len(maps[r])):
+            if maps[r][c] == 'L':
+                lever = (r,c)
+            elif maps[r][c] == 'E':
+                exit = (r,c)
+            elif maps[r][c] == 'S':
+                start = (r,c)
+    
+    d1 = bfs(start, lever, maps)
+    d2 = bfs(lever, exit, maps)
+    
+    if d1 == -1 or d2 == -1:
+        return -1
+    
+    return d1+d2
+
+def bfs(src, dest, maps):
+    visited = [[False] * len(maps[0]) for _ in range(len(maps))]
+    queue = deque()
+    queue.append((src,0))
+    visited[src[0]][src[1]] = True
+    
+    while queue:
+        (r,c), curr_cost = queue.popleft()
+        
+        if (r,c) == dest:
+            return curr_cost
+        
+        for dr,dc in [(-1,0), (1,0), (0,-1), (0,1)]:
+            nr,nc = r + dr, c + dc
+            if not (0 <= nr < len(maps) and 0 <= nc < len(maps[0])):
+                continue
+            if maps[nr][nc] == 'X':
+                continue
+            if visited[nr][nc] == True:
+                continue
+            
+            visited[nr][nc] = True
+            queue.append(((nr,nc), curr_cost+1))
+    return -1
+```
+<br/>
+
 
 ## Python 풀이
 
