@@ -57,3 +57,40 @@ def solution(maps):
     
     return sorted(answer)
 ```
+
+### 코드 (DFS - 재귀 방식)
+시스템 스택(재귀 호출)을 이용하여 더 간결하게 구현할 수도 있습니다. 단, 재귀 깊이 제한(`setrecursionlimit`)에 주의해야 합니다.
+
+```python
+import sys
+sys.setrecursionlimit(10**6)
+
+def solution(maps):
+    rows, cols = len(maps), len(maps[0])
+    visited = [[False] * cols for _ in range(rows)]
+    answer = []
+    
+    def dfs(r, c):
+        # 1. 방문 처리 및 현재 값 더하기
+        visited[r][c] = True
+        total = int(maps[r][c])
+        
+        # 2. 4방향 탐색
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols:
+                if maps[nr][nc] != 'X' and not visited[nr][nc]:
+                    total += dfs(nr, nc) # 재귀 호출 반환값을 누적
+        
+        return total
+
+    for r in range(rows):
+        for c in range(cols):
+            if maps[r][c] != 'X' and not visited[r][c]:
+                answer.append(dfs(r, c))
+                
+    if not answer:
+        return [-1]
+        
+    return sorted(answer)
+```
