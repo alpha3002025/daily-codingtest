@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>멀쩡한 사각형 시각화</title>
+    <style>
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+            background-color: #f5f5f7;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1d1d1f;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .grid-container {
+            display: grid;
+            margin: 20px auto;
+            border: 2px solid #333;
+            background-color: white;
+            position: relative;
+        }
+
+        .cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+            background-color: #fff;
+        }
+
+        .cell.start-end {
+            background-color: #e3f2fd;
+            /* 격자 시작/끝 점 */
+        }
+
+        .cell.cut {
+            background-color: #ffcdd2;
+            /* 잘린 사각형 */
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 8px;
+            width: 60px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #0071e3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0077ed;
+        }
+
+        .info {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .formula {
+            background-color: #fce4ec;
+            color: #c2185b;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        line {
+            stroke: #2962ff;
+            stroke-width: 2;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>멀쩡한 사각형 공식 이해하기</h1>
+
+    <div class="card">
+        <h3>공식: <code>W + H - GCD(W, H)</code></h3>
+        <p>
+            대각선이 지나가는 사각형(못 쓰는 사각형)의 개수는 가로 + 세로에서 최대공약수만큼 뺀 값입니다.<br>
+            이는 직사각형이 <code>GCD</code>개의 작은 동일한 패턴(블록)으로 나뉘기 때문입니다.
+        </p>
+        <div class="controls">
+            <label>W: <input type="number" id="inputW" value="8" min="1" max="20"></label>
+            <label>H: <input type="number" id="inputH" value="12" min="1" max="20"></label>
+            <button onclick="drawGrid()">시각화</button>
+        </div>
+        <div class="info" id="resultInfo"></div>
+    </div>
+
+    <div class="card" style="overflow: auto;">
+        <div id="gridArea" class="grid-container"></div>
+    </div>
+
+    <script>
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+
+        function drawGrid() {
+            const W = parseInt(document.getElementById('inputW').value);
+            const H = parseInt(document.getElementById('inputH').value);
+            const g = gcd(W, H);
+
+            const cellPixel = 40;
+            const gridArea = document.getElementById('gridArea');
+
+            // Grid 설정
+            gridArea.style.gridTemplateColumns = `repeat(${W}, ${cellPixel}px)`;
+            gridArea.style.width = `${W * cellPixel}px`;
+            gridArea.style.height = `${H * cellPixel}px`;
+            gridArea.innerHTML = ''; // 초기화
+
+            // 대각선 (SVG)
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("width", W * cellPixel);
+            svg.setAttribute("height", H * cellPixel);
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", 0);
+            line.setAttribute("y1", H * cellPixel); // Cartesian 좌표계 아님, SVG는 좌상단 0,0. 아래로 Y증가. 
+            // 문제의 대각선은 보통 (0,H) -> (W,0) 또는 (0,0) -> (W,H). 
+            // 여기서는 (0,0) -> (W,H)로 그림.
+            line.setAttribute("y1", 0);
+            line.setAttribute("x2", W * cellPixel);
+            line.setAttribute("y2", H * cellPixel);
+            svg.appendChild(line);
+            gridArea.appendChild(svg);
+
+            // 셀 생성 및 잘린 사각형 판별
+            // 공식: y = (H/W) * x
+            // x 구간 [i, i+1] 에서 y값 범위가 정수 격자 [j, j+1]을 침범하면 잘린 것
+            let cutCount = 0;
+
+            for (let y = 0; y < H; y++) {
+                for (let x = 0; x < W; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+
+                    // 대각선이 이 셀(x, y)을 지나가는지 판별
+                    // 직선: Y = (H/W) * X
+                    // 셀의 범위: X=[x, x+1], Y=[y, y+1]
+                    // 교차 조건: 직선이 사각형 내부를 통과
+
+                    // 간단 판별법: (x, y)가 기울기 아래이고, (x+1, y+1)가 기울기 위라면 통과
+                    // 또는 정수 좌표 계산 이용
+                    // (H*x < W*(y+1)) AND (H*(x+1) > W*y)
+
+                    if (H * x < W * (y + 1) && H * (x + 1) > W * y) {
+                        cell.classList.add('cut');
+                        cutCount++;
+                    }
+
+                    gridArea.appendChild(cell);
+                }
+            }
+
+            // 결과 텍스트 업데이트
+            const total = W * H;
+            const formulaResult = W + H - g;
+            const usable = total - formulaResult;
+
+            document.getElementById('resultInfo').innerHTML = `
+                전체 칸: <b>${total}</b>개 <br>
+                최대공약수(GCD): <b>${g}</b> (즉, ${g}개의 동일 패턴 반복)<br>
+                잘린 칸(붉은색): <span class="formula">${formulaResult}</span>개 (공식: ${W} + ${H} - ${g})<br>
+                사용 가능 칸(흰색): <b>${usable}</b>개
+            `;
+        }
+
+        // 초기 실행
+        drawGrid();
+    </script>
+</body>
+
+</html>
