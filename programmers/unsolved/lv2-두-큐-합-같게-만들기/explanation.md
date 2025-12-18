@@ -1,5 +1,8 @@
 # 두 큐 합 같게 만들기
 
+## link
+- https://school.programmers.co.kr/learn/courses/30/lessons/118667
+
 ## 문제 설명
 길이가 같은 두 개의 큐 `queue1`, `queue2`가 주어집니다.
 한 번의 작업은 큐에서 `pop`하여 다른 큐에 `insert`하는 것입니다.

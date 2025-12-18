@@ -6,6 +6,8 @@ heap 문제들은 시뮬레이션에 넣는게 맞는데, 시뮬레이션과 섞
 
 <br/>
 
+## link
+- https://school.programmers.co.kr/learn/courses/30/lessons/142085
 
 ## 문제 설명
 병사 `n`명과 무적권 `k`개가 있습니다.

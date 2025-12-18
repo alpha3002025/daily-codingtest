@@ -17,6 +17,9 @@
 ```
 <br/>
 
+## link
+- https://school.programmers.co.kr/learn/courses/30/lessons/148653
+
 
 ## 문제 설명
 마법의 엘리베이터가 있는 층 `storey`가 주어집니다.
@@ -41,7 +44,7 @@
 ## 코드 (Python)
 
 ```python
-def solution(storey):
+def solution(sto의rey):
     answer = 0
     
     while storey > 0:

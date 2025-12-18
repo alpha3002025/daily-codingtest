@@ -1,5 +1,9 @@
 # 뒤에 있는 큰 수 찾기
 
+## link
+- https://school.programmers.co.kr/learn/courses/30/lessons/154539
+
+
 ## 문제 설명
 정수 배열 `numbers`가 주어집니다.
 배열의 각 원소들에 대해 "자신보다 뒤에 있는 숫자 중에서 자신보다 크면서 가장 가까이 있는 수"를 뒷 큰수라고 합니다.
