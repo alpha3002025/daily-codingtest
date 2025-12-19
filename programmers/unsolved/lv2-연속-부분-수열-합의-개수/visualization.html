@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>연속 부분 수열 합의 개수 시각화</title>
+    <style>
+        body {
+            font-family: 'Apple SD Gothic Neo', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .controls {
+            margin-bottom: 30px;
+        }
+
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            position: relative;
+            flex-wrap: nowrap;
+        }
+
+        .array-item {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 5px;
+            font-weight: bold;
+            font-size: 1.2em;
+            border-radius: 8px;
+            background-color: white;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        /* 순환되는 뒷부분 요소 스타일 */
+        .array-item.extended {
+            border-style: dashed;
+            color: #888;
+            background-color: #f9f9f9;
+        }
+
+        /* 현재 선택된 요소 스타일 */
+        .array-item.active {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+            color: #1565c0;
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        /* 현재 합에 포함되는 범위 표시 */
+        .window-highlight {
+            position: absolute;
+            height: 60px;
+            border: 3px solid #ff9800;
+            border-radius: 12px;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            top: -5px;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+            z-index: 5;
+        }
+
+        .info-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .panel-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #2196f3;
+        }
+
+        .set-container {
+            margin-top: 20px;
+            text-align: left;
+            background-color: #fff3e0;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #ff9800;
+        }
+
+        .set-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .set-badge {
+            background-color: #ff9800;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        button {
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #1976d2;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #4caf50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* 윈도우 인덱스 라벨 */
+        .array-label {
+            position: absolute;
+            top: -25px;
+            font-size: 0.8em;
+            color: #666;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>연속 부분 수열 합의 개수</h1>
+
+    <div class="container">
+        <div class="controls">
+            <button id="startBtn" onclick="startVisualization()">시작</button>
+            <button id="pauseBtn" onclick="togglePause()" disabled>일시정지</button>
+            <button id="resetBtn" onclick="resetVisualization()">초기화</button>
+            <div style="margin-top: 10px;">
+                <label>속도: <input type="range" id="speedRange" min="1" max="10" value="5"></label>
+            </div>
+        </div>
+
+        <div class="array-container" id="arrayContainer">
+            <!-- 자바스크립트로 생성됨 -->
+            <div class="window-highlight" id="windowHighlight" style="display:none;"></div>
+        </div>
+
+        <div class="info-panel">
+            <div class="panel-item">
+                <h3>🔍 현재 상태</h3>
+                <p>시작 인덱스 (Start): <strong id="startIndex">-</strong></p>
+                <p>길이 (Length): <strong id="currentLength">-</strong></p>
+                <p>현재 부분 수열: <strong id="subSequence">-</strong></p>
+            </div>
+            <div class="panel-item">
+                <h3>🧮 계산 결과</h3>
+                <p>현재 합: <strong id="currentSum" style="color:#d32f2f; font-size:1.2em">-</strong></p>
+                <p>총 발견된 수의 개수: <strong id="countResult">0</strong></p>
+            </div>
+        </div>
+
+        <div class="set-container">
+            <h3>📦 결과 집합 (중복 제거)</h3>
+            <div class="set-items" id="setItems"></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <script>
+        const elements = [7, 9, 1, 1, 4];
+        const extendedElements = [...elements, ...elements.slice(0, elements.length - 1)]; // 시각화용 확장
+        const n = elements.length;
+
+        let isRunning = false;
+        let isPaused = false;
+        let startIdx = 0;
+        let length = 0; // 0 means not started, will loop 1 to n
+        let foundSums = new Set();
+        let timer = null;
+        let baseDelay = 1000;
+
+        function init() {
+            const container = document.getElementById('arrayContainer');
+            const highlight = document.getElementById('windowHighlight');
+            container.innerHTML = '';
+            container.appendChild(highlight);
+
+            extendedElements.forEach((num, idx) => {
+                const div = document.createElement('div');
+                div.className = `array-item ${idx >= n ? 'extended' : ''}`;
+                div.textContent = num;
+                div.id = `item-${idx}`;
+
+                // 인덱스 라벨 추가
+                const label = document.createElement('span');
+                label.className = 'array-label';
+                label.textContent = idx;
+                div.appendChild(label);
+
+                container.appendChild(div);
+            });
+        }
+
+        function updateSpeed() {
+            const val = document.getElementById('speedRange').value;
+            baseDelay = 1000 - (val - 1) * 100; // 1000ms ~ 100ms
+        }
+
+        document.getElementById('speedRange').addEventListener('input', updateSpeed);
+
+        async function startVisualization() {
+            if (isRunning && !isPaused) return;
+            if (isPaused) {
+                isPaused = false;
+                document.getElementById('pauseBtn').textContent = "일시정지";
+                runStep();
+                return;
+            }
+
+            isRunning = true;
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = false;
+
+            // Start from beginning
+            startIdx = 0;
+            length = 1;
+            foundSums.clear();
+            document.getElementById('setItems').innerHTML = '';
+            document.getElementById('countResult').textContent = '0';
+
+            runStep();
+        }
+
+        function togglePause() {
+            if (!isRunning) return;
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').textContent = isPaused ? "재개" : "일시정지";
+            if (!isPaused) runStep();
+        }
+
+        function resetVisualization() {
+            clearTimeout(timer);
+            isRunning = false;
+            isPaused = false;
+            startIdx = 0;
+            length = 0;
+            foundSums.clear();
+
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('pauseBtn').textContent = "일시정지";
+            document.getElementById('windowHighlight').style.display = 'none';
+            document.getElementById('setItems').innerHTML = '';
+
+            // Remove active classes
+            document.querySelectorAll('.array-item').forEach(el => el.classList.remove('active'));
+
+            document.getElementById('startIndex').textContent = '-';
+            document.getElementById('currentLength').textContent = '-';
+            document.getElementById('currentSum').textContent = '-';
+            document.getElementById('subSequence').textContent = '-';
+            document.getElementById('countResult').textContent = '0';
+            document.getElementById('progressFill').style.width = '0%';
+        }
+
+        function runStep() {
+            if (!isRunning || isPaused) return;
+
+            if (length > n) {
+                isRunning = false;
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('pauseBtn').disabled = true;
+                alert('완료되었습니다! 총 ' + foundSums.size + '개의 합을 찾았습니다.');
+                return;
+            }
+
+            // 시각화 업데이트
+            updateVisuals();
+
+            // 다음 스텝 준비
+            startIdx++;
+            if (startIdx >= n) {
+                startIdx = 0;
+                length++;
+            }
+
+            timer = setTimeout(runStep, baseDelay);
+        }
+
+        function updateVisuals() {
+            // 모든 하이라이트 초기화
+            document.querySelectorAll('.array-item').forEach(el => el.classList.remove('active'));
+
+            if (length > n) return;
+
+            // 현재 윈도우 계산
+            // 원형 수열 처리를 위해 인덱스 계산 (extendedElements 사용)
+            let currentSum = 0;
+            let subSeq = [];
+
+            // 실제 하이라이트 할 요소들
+            const startNode = document.getElementById(`item-${startIdx}`);
+            let totalWidth = 0;
+            let leftPos = startNode.offsetLeft;
+
+            // 연속된 윈도우 요소 하이라이트
+            for (let i = 0; i < length; i++) {
+                let idx = startIdx + i;
+                const el = document.getElementById(`item-${idx}`);
+                if (el) {
+                    el.classList.add('active');
+                    currentSum += parseInt(extendedElements[idx]);
+                    subSeq.push(extendedElements[idx]);
+
+                    // 윈도우 박스 크기 계산 (마진 포함 대략적으로)
+                    totalWidth += 64; // 50(width) + 10(margin) + 4(border)
+                }
+            }
+
+            // 윈도우 박스 이동
+            const highlight = document.getElementById('windowHighlight');
+            highlight.style.display = 'block';
+            highlight.style.left = (leftPos - 7) + 'px'; // 조금 보정
+            highlight.style.width = (totalWidth - 4) + 'px'; // 보정
+
+            // 텍스트 정보 업데이트
+            document.getElementById('startIndex').textContent = startIdx;
+            document.getElementById('currentLength').textContent = length;
+            document.getElementById('subSequence').textContent = `[${subSeq.join(', ')}]`;
+            document.getElementById('currentSum').textContent = currentSum;
+
+            // 집합에 추가 및 표시
+            if (!foundSums.has(currentSum)) {
+                foundSums.add(currentSum);
+                const badge = document.createElement('span');
+                badge.className = 'set-badge';
+                badge.textContent = currentSum;
+                document.getElementById('setItems').appendChild(badge);
+                document.getElementById('countResult').textContent = foundSums.size;
+            }
+
+            // 진행률 표시 (대략적으로)
+            // Total steps approx: n * n
+            const totalSteps = n * n;
+            const currentStep = (length - 1) * n + startIdx + 1;
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        // 초기화 실행
+        init();
+    </script>
+</body>
+
+</html>
