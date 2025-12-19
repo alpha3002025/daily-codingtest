@@ -31,14 +31,14 @@ def solution(n, info):
     
     # idx: 현재 고려중인 점수 인덱스 (0: 10점, 1: 9점 ... )
     # arrows: 라이언이 쏜 화살 현황 리스트
-    # left: 남은 화살 수
-    def dfs(idx, arrows, left):
+    # remain: 남은 화살 수
+    def dfs(idx, arrows, remain):
         nonlocal max_diff, answer
         
-        if idx == 11 or left == 0:
+        if idx == 11 or remain == 0:
             # 남은 화살은 0점(idx 10)에 몰아줌
-            if left > 0:
-                arrows[10] += left
+            if remain > 0:
+                arrows[10] += remain
                 
             # 점수 계산
             apeach_score = 0
@@ -71,19 +71,19 @@ def solution(n, info):
                             break
             
             # 화살 회수 (Backtracking) - 0점 몰아준거 취소
-            if left > 0:
-                arrows[10] -= left
+            if remain > 0:
+                arrows[10] -= remain
             return
 
         # 1. 현재 점수(10-idx)를 먹는 경우 (어피치보다 1발 더 쏨)
         needed = info[idx] + 1
-        if left >= needed:
+        if remain >= needed:
             arrows[idx] = needed
-            dfs(idx + 1, arrows, left - needed)
+            dfs(idx + 1, arrows, remain - needed)
             arrows[idx] = 0 # 복구
             
         # 2. 현재 점수를 포기하는 경우 (0발 쏨)
-        dfs(idx + 1, arrows, left)
+        dfs(idx + 1, arrows, remain)
 
     dfs(0, [0]*11, n)
     
@@ -92,3 +92,97 @@ def solution(n, info):
         
     return answer
 ```
+<br/>
+<br/>
+
+## 옛날 풀이 (python)
+```python
+def solution(n, info):
+    apeach_score = sum(10-i for i in range(11) if info[i] != 0)
+    weights = [-1] + [x+1 for x in info]
+    
+    ## 어피치보다 높은 점수를 받아야 하는 요소 : 2*(10-i) 점 획득
+    ## 어피치가 득점을 하지 못한 과녁 : 10-i
+    values = [-1] + [2*(10-i) if info[i] != 0 else (10-i) for i in range(11)]
+    
+    dp = [[0] * (n+1) for _ in range(12)]
+    
+    for i in range(1, 12): ## info 의 길이 1 ~ 12
+        for w in range(1, n+1): ## 화살 개수(1<=n<=10)
+            if weights[i] > w:
+                dp[i][w] = dp[i-1][w]
+            else:
+                dp[i][w] = max(
+                    dp[i-1][w - weights[i]] + values[i],
+                    dp[i-1][w]
+                )
+    
+    last_score = dp[-1][-1] - apeach_score
+    if last_score <= 0:
+        return [-1]
+    
+    answer = [0] * 11
+    w = n 
+    for i in range(11, 0, -1):
+        if dp[i][w] == dp[i-1][w-weights[i]] + values[i]:
+            answer[i-1] = weights[i]
+            w = w - weights[i]
+            
+    answer[-1] += (n - sum(answer))
+    return answer
+```
+
+<br/>
+<br/>
+
+### 코드 상세 설명 (Knapsack DP 풀이)
+
+이 풀이는 문제를 **배낭 채우기 문제(0/1 Knapsack Problem)**로 치환하여 해결한 방식입니다.
+
+**1. 문제 치환**
+- **과녁 점수 매핑 (`10 - i`)**: 
+    - `i`는 배열의 **인덱스**입니다. (0부터 10까지)
+    - `10 - i`는 해당 인덱스가 의미하는 **과녁 점수**입니다.
+        - `i=0` -> 10점
+        - `i=1` -> 9점
+        - ...
+        - `i=10` -> 0점
+- **가방 용량 (Capacity)**: 사용 가능한 화살의 수 `n`
+- **아이템 (Item)**: 각 점수별 과녁 (0점~10점)
+- **무게 (Weight)**: 해당 과녁 점수를 얻기 위해 필요한 화살 수 (`weights[i]`)
+    - 어피치가 3발 쐈다면, 라이언은 4발 필요 (`info[i] + 1`)
+- **가치 (Value)**: 화살을 투자했을 때 얻을 수 있는 점수의 이득 (`values[i]`)
+    - **핵심**: 만약 `10점` 과녁을 라이언이 이긴다면?
+        - 라이언은 10점 획득 (+10)
+        - 어피치는 10점 상실 (-10)
+        - **Value = 20점** (10 - (-10))
+    - 단, 어피치가 0발 쐈던 과녁이라면, 어피치 점수 변화는 없으므로 **Value = 10점**
+
+**2. 변수 설정**
+- `weights`: 각 점수(`i`)를 따기 위한 화살 비용 리스트 (인덱스 1부터 10점~0점 역순 배치 등 확인 필요)
+- `values`: 각 점수(`i`)를 땄을 때의 가치 리스트
+- `dp[i][w]`: `i`번째 과녁까지 고려하고, 화살 `w`개를 썼을 때 얻을 수 있는 **최대 점수 이득**
+
+**3. DP 점화식**
+```python
+if current_weight > current_capacity:
+    # 화살이 모자라서 현재 점수를 못 따는 경우: 이전 상태 유지
+    dp[i][w] = dp[i-1][w]
+else:
+    # 점수를 따거나, 안 따거나 중 더 큰 이득 선택
+    dp[i][w] = max(
+        dp[i-1][w - current_weight] + current_value,  # 따는 경우
+        dp[i-1][w]                                    # 안 따는 경우
+    )
+```
+
+**4. 정답 추적 (Backtracking)**
+- DP 테이블이 채워진 후, 역추적을 통해 실제로 어떤 과녁을 선택했는지 찾아냅니다.
+- `dp[i][w]` 값이 **"따는 경우"**(`dp[i-1][w-weights[i]] + values[i]`)와 같다면, 해당 과녁을 맞힌 것으로 간주하여 `answer`에 기록하고 남은 화살 `w`를 차감합니다.
+
+**5. 남은 화살 처리**
+- 모든 추적이 끝난 후, 아직 화살이 남았다면 (`n - sum(answer)`), 이는 점수 이득엔 기여하지 못하는 잉여 화살이므로 0점(인덱스 10) 과녁에 몰아줍니다. (낮은 점수 우선 조건 충족에도 유리)
+
+<br/>
+<br/>
+
