@@ -48,3 +48,33 @@ def solution(x, y, n):
                 
     return -1
 ```
+
+## 나의 풀이
+### 2025/12/19
+```python
+from collections import deque
+
+def solution(x, y, n):
+    visited = set()
+    queue = deque([])
+    queue.append((x,0))
+    visited.add(x)
+    
+    while queue:
+        curr_number, curr_cost = queue.popleft()
+        
+        if curr_number == y:
+            return curr_cost
+        
+        for next_number in [curr_number + n, curr_number * 2, curr_number * 3]:
+            
+            if next_number in visited: 
+                continue
+            if next_number > y:
+                continue
+            queue.append((next_number, curr_cost+1))
+            visited.add(next_number)
+    
+    return -1
+```
+
