@@ -1,4 +1,15 @@
 # 순위 검색
+**combination + hash + binary search**<br/>
+<br/>
+
+- 좋은 문제다. 처음에는 우습게 보고 풀었었다. 
+- 이 문제는 `info` 배열의 크기가 최대 50000, `query` 배열의 크기가 최대 100000 인데, 이중 반복문을 사용해야 하기 때문에 최악의 경우 50000 x 100000 = 50억번의 연산횟수가 필요하다. 
+- 1ns 는 1/10억분이고, 32비트 컴퓨터 기준 약 1/4 클록이기에 클록의 25% 를 쓴다는 것은 최악의 경우 많이 느리다는 의미다.
+- 따라서 미리 조합을 통해서 조건값들을 해시에 넣어두어 조회하는 것이 필요하고, 특정 점수 이상을 조회하는 것 역시 이분탐색을 통해 검색 속도를 최적화해야 한다.
+
+<br/>
+<br/>
+
 
 ## 문제 설명
 지원자들의 정보(언어, 직군, 경력, 소울푸드, 점수)가 주어지고, "조건"에 맞는 지원자가 몇 명인지 찾는 쿼리를 여러 번 수행해야 합니다.
@@ -34,18 +45,15 @@ def solution(info, query):
         conditions = temp[:-1] # 점수 제외한 4가지 속성
         score = int(temp[-1])
         
-        # 4가지 속성에 대해 '-'가 포함될 수 있는 모든 조합 생성 (0개~4개 선택)
+        # 4가지 속성 중 0개~4개를 선택하여 '-'로 바꾼 모든 경우의 수(16가지)를 생성
+        # 예: java backend junior pizza 
+        # -> java - junior pizza (backend를 '-'로 바꿈)
+        # -> - - - - (모두 '-'로 바꿈) 등
         for k in range(5):
             for c in combinations(range(4), k):
-                # c에 포함된 인덱스는 '-'로 대체하는 방식 or 
-                # c에 포함된 인덱스만 값을 유지하고 나머지는 '-'로 하는 방식
-                # 여기서는 combinations로 뽑은 인덱스를 조건 값으로 쓰고, 나머지는 '-'로 채우는 식으로 가거나
-                # 반대로 combinations로 뽑은 위치를 '-'로 바꿈.
-                
-                # 구현 편의상: 4개의 속성을 16가지 key로 만듦
-                key_list = conditions[:]
+                key_list = conditions[:] 
                 for idx in c:
-                    key_list[idx] = '-'
+                    key_list[idx] = '-' # 선택된 인덱스를 와일드카드('-')로 변경
                 
                 key = "".join(key_list)
                 data[key].append(score)
@@ -79,3 +87,50 @@ def solution(info, query):
 - **정렬**: 전처리가 끝난 후 한 번만 정렬합니다.
 - `bisect_left`: 정렬된 리스트에서 특정 값 이상이 처음 등장하는 인덱스를 반환합니다. 이를 이용해 $O(1)$이 아닌 $O(\log N)$으로 쿼리를 처리합니다.
 - 복잡도: 전처리 $O(N \cdot 2^4)$, 정렬 $O(Key \cdot L \log L)$, 쿼리 $O(M \cdot \log L)$. $N, M$이 커도 충분히 빠릅니다.
+
+
+## 나의 풀이
+### 2025/12/19
+```python
+from bisect import bisect_left
+from itertools import combinations
+from collections import defaultdict
+
+def solution(info, query):
+    answer = []
+    results = defaultdict(list)
+    
+    for data in info:
+        args = data.split()
+        conditions = args[:-1]
+        score = int(args[-1])
+        
+        ## 4가지 조건 중 '-'가 포함되는 케이스의 조합 생성
+        ## e.g. java backend junior pizza ➝ java - junior pizza ➝ - - - -
+        for curr_len in range(5):
+            for c in combinations(range(4), curr_len): 
+                    ## '-' 는 4개까지만 가능하다. 
+                    ## score 는 '-'가 올수 없는 것이 문제의 조건이기 때문
+                key_list = conditions[:]
+                
+                ## 0 일때에는 for loop 이 수행되지 않으므로 조건 문자열 그대로 유지 가능
+                for idx in c:
+                    key_list[idx] = '-' ## 선택된 인덱스의 위치를 '-'로 변경
+                                        
+                
+                key = "".join(key_list)
+                results[key].append(score)
+                
+    for key in results:
+        results[key].sort() ## 해당 조건내의 점수들을 점수 순 오름차순 정렬
+    
+    for q in query:
+        lang,job,level,food,score = q.replace('and', '').split()
+        key = lang+job+level+food
+        scores = results[key]
+        idx = bisect_left(scores, int(score))
+        
+        answer.append(len(scores) - idx)
+    
+    return answer
+```
