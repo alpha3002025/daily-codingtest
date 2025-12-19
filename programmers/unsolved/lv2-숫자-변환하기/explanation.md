@@ -19,7 +19,7 @@
    - 결과값이 `y`보다 작고 방문하지 않았다면 큐에 추가하고 방문 처리합니다.
 4. 큐가 빌 때까지 `y`에 도달하지 못하면 -1을 반환합니다.
 
-## 코드 (Python)
+## bfs 코드 (Python)
 
 ```python
 from collections import deque
@@ -49,8 +49,42 @@ def solution(x, y, n):
     return -1
 ```
 
+## dp코드 (Python)
+DP 배열(`dp[i]`: i를 만드는 최소 횟수)을 사용하여 **작은 숫자부터 y까지** 채워나가는 방식입니다. `x`에서 출발하여 `+n`, `*2`, `*3` 위치의 값을 갱신합니다.
+
+```python
+def solution(x, y, n):
+    INF = float('inf')
+    dp = [INF] * (y + 1)
+    
+    dp[x] = 0
+    
+    for i in range(x, y):
+        # 도달할 수 없는 숫자는 건너뜀
+        if dp[i] == INF:
+            continue
+            
+        # 3가지 경우의 수 갱신
+        if i + n <= y:
+            dp[i + n] = min(dp[i + n], dp[i] + 1)
+        if i * 2 <= y:
+            dp[i * 2] = min(dp[i * 2], dp[i] + 1)
+        if i * 3 <= y:
+            dp[i * 3] = min(dp[i * 3], dp[i] + 1)
+            
+    if dp[y] == INF:
+        return -1
+        
+    return dp[y]
+```
+
+**DP 풀이 설명**:
+- `dp` 테이블을 `INF`로 초기화하고, 시작점 `dp[x] = 0`으로 설정합니다.
+- `x`부터 `y` 직전까지 반복하며, 현재 숫자 `i`에 도달할 수 있다면(`dp[i] != INF`), 그 다음 단계(`i+n`, `i*2`, `i*3`)의 횟수를 **최솟값으로 갱신**합니다.
+- BFS보다 직관적일 수 있으나, 불필요한 모든 숫자(`x`~`y`)를 순회해야 한다는 단점도 있습니다. (BFS는 필요한 숫자만 방문)
+
 ## 나의 풀이
-### 2025/12/19
+### 2025/12/19 (bfs)
 ```python
 from collections import deque
 
@@ -77,4 +111,37 @@ def solution(x, y, n):
     
     return -1
 ```
+<br/>
+<br/>
 
+### 2025/12/19 (dp)
+```python
+def solution(x, y, n):
+    dp = [float('inf')]*(y+1)
+    dp[x] = 0
+    
+    for curr_number in range(x, y):
+        if dp[curr_number] == float('inf'):
+            continue
+            
+        # for next_number in [curr_number + n, curr_number * 2, curr_number * 3]:
+        if curr_number + n <= y:
+            dp[curr_number + n] = min(dp[curr_number]+1, dp[curr_number + n])
+        if curr_number * 2 <= y:
+            dp[curr_number * 2] = min(dp[curr_number]+1, dp[curr_number * 2])
+        if curr_number * 3 <= y:
+            dp[curr_number * 3] = min(dp[curr_number]+1, dp[curr_number * 3])
+            
+    if dp[y] == float('inf'):
+        return -1
+    
+    return dp[y]
+```
+
+#### 코드 상세 설명
+- `if curr_number + n <= y:`
+    - 현재 숫자(`curr_number`)에서 `n`을 더했을 때 목표 값(`y`)를 넘어서는지 확인하는 **범위 체크 조건**입니다.
+    - 리스트 `dp`의 길이는 `y+1`이므로, 인덱스가 `y`를 초과하면 `IndexError`가 발생합니다.
+    - 따라서 연산 결과가 유효한 인덱스 범위(`<= y`) 내에 있을 때만 `dp` 값을 갱신해야 합니다.
+<br/>
+<br/>
