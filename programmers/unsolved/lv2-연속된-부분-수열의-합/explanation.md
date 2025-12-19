@@ -21,6 +21,8 @@
      - (길이가 같을 경우, 앞쪽부터 탐색하므로 굳이 갱신하지 않아도 "시작 인덱스가 작은 것" 조건이 자연스럽게 유지됩니다. 단, 뒤쪽에서 같은 길이의 해가 나올 수 있으므로 갱신 조건은 `<`를 사용합니다.)
      - 다음 탐색을 위해 `left`를 이동시켜 합을 줄이고 계속 진행합니다 (또는 `current_sum -= sequence[left]; left += 1`).
 
+
+
 ## 코드 (Python)
 
 ```python
@@ -30,7 +32,7 @@ def solution(sequence, k):
     right = 0
     current_sum = sequence[0]
     
-    # 최라 정답을 저장할 변수 [start, end, length]
+    # 최적 정답을 저장할 변수 [start, end, length]
     # 초기값은 가장 긴 길이보다 큰 값으로 설정
     best_range = [0, 0, float('inf')]
     
