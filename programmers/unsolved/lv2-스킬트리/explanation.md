@@ -32,9 +32,40 @@ def solution(skill, skill_trees):
     return answer
 ```
 
+
 ### 코드 설명
 - `[c for c in tree if c in skill]` : 리스트 컴프리헨션으로 선행 조건이 있는 스킬만 추출합니다.
 - `skill.startswith(filtered_skill)` : 추출된 스킬 순서가 정해진 순서의 앞부분과 일치하는지 봅니다.
     - `skill="CBD"` 일 때, `filtered="CB"`는 True (C 배우고 B 배움).
     - `filtered="BD"`는 False (C 없이 B 배움).
     - `filtered=""`는 True (아무것도 선행 스킬을 안 배움 -> 가능).
+
+
+## 참고 문법: `startswith`
+- **`str.startswith(prefix)`**: 문자열이 특정 접두사(`prefix`)로 시작하는지 (`True`/`False`) 확인합니다.
+- **특징**:
+  - 대소문자를 구분합니다.
+  - 인자로 **튜플**을 넘기면 여러 접두사 중 하나라도 일치하면 `True`를 반환합니다.
+- **예시**:
+```python
+s = "Hello World"
+print(s.startswith("He"))      # True
+print(s.startswith("world"))   # False
+print(s.startswith(("Hi", "He"))) # True (Hi 또는 He로 시작하는가?)
+```
+
+
+## 나의 풀이
+### 2025/12/19 (1)
+```python
+def solution(skill, skill_trees):
+    count = 0
+    for curr_skill in skill_trees:
+        found_skills = "".join([c for c in curr_skill if c in skill])
+        
+        ## found_skills 가 skill 보다 더 작은 문자열일 수 있다.
+        if skill.startswith(found_skills):
+            count += 1
+        
+    return count
+```
