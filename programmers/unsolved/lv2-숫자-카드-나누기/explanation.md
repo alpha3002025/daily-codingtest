@@ -23,15 +23,15 @@
 import math
 
 # 여러 수의 최대공약수 구하기 (reduce 활용 가능)
-def get_gcd_list(nums):
+def get_gcd_from_list(nums):
     g = nums[0]
     for i in range(1, len(nums)):
         g = math.gcd(g, nums[i])
     return g
 
 def solution(arrayA, arrayB):
-    gcd_a = get_gcd_list(arrayA)
-    gcd_b = get_gcd_list(arrayB)
+    gcd_a = get_gcd_from_list(arrayA)
+    gcd_b = get_gcd_from_list(arrayB)
     
     answer = 0
     
@@ -44,4 +44,50 @@ def solution(arrayA, arrayB):
         answer = max(answer, gcd_b)
         
     return answer
+```
+
+## 참고 문법: `math.gcd`
+- **기능**: 두 정수의 최대공약수(Greatest Common Divisor)를 반환합니다.
+- **Python 3.9 이상**: `math.gcd(a, b, c, ...)` 처럼 3개 이상의 인자도 한 번에 받을 수 있습니다. (코딩테스트 환경 버전에 주의 필요, 보통 `3.8` 이하인 경우 두 개씩 연쇄적으로 해야 함)
+- **사용 예시**:
+```python
+import math
+print(math.gcd(12, 18)) # 6
+print(math.gcd(0, 5))   # 5 (0과의 gcd는 0이 아닌 수 자기 자신)
+```
+- **여러 수의 GCD 구하기**:
+  - Python 3.9+: `math.gcd(*array)`
+  - Python 3.8 이하: 반복문 사용 (`g = gcd(g, next_val)` 형태) 또는 `functools.reduce(math.gcd, array)` 사용.
+
+
+## 나의 풀이
+### 2025/12/19 (1)
+```python
+import math
+
+def gcd_from_list(numbers):
+    curr = numbers[0]
+    for i in range(1, len(numbers)):
+        curr = math.gcd(curr, numbers[i])
+    return curr
+
+
+def solution(arrayA, arrayB):
+    gcdA = gcd_from_list(arrayA)
+    gcdB = gcd_from_list(arrayB)
+    
+    foundA = False
+    a = 0
+    for n in arrayB:
+        if n % gcdA == 0:
+            foundA = True
+            break
+    
+    foundB = False
+    for n in arrayA:
+        if n % gcdB == 0:
+            foundB = True
+            break
+    
+    return 0 if foundA and foundB else max(gcdA, gcdB)
 ```
