@@ -1,5 +1,23 @@
 # 큰 수 만들기
 
+## 개념설명 코드 (나의 풀이)
+```python
+def solution(number, k):
+    stack = []
+    for curr in number:
+        while stack and k > 0 and stack[-1] < curr:
+            ## stack 에는 큰 숫자만 남긴다. (curr 보다 prev 들은 제거해나간다.)
+            stack.pop()
+            k -= 1
+        stack.append(curr)
+    
+    if k > 0:
+        stack = stack[:-k]
+    
+    return "".join(stack)
+```
+
+
 ## 문제 설명
 어떤 숫자 문자열 `number`에서 `k`개의 수를 제거했을 때 얻을 수 있는 **가장 큰 숫자**를 구해야 합니다.
 
