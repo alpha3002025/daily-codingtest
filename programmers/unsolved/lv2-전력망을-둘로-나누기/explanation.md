@@ -1,4 +1,9 @@
 # 전력망을 둘로 나누기
+엄청 어려운 문제 같은데 사실 그냥 1 \~ n 까지의 모든 노드에 대해 bfs 를 다 해보면서 나온 결과에서 abs(count - (n-count)) 의 매 순간 min() 으로 업데이트 해서 구하는 방식<br/>
+
+프로그래머스 문제는 실제 시험에서 진짜 이런 상황에서 '이런 노가다로 푼다고?' 하면서 납득이 안가는 상황에서 '이 방법말고 없구나' 납득하고 나서 푸는 듯한 문제가 많다.<br/>
+<br/>
+
 
 ## 문제 설명
 $n$개의 송전탑이 전선으로 연결되어 하나의 트리(Tree) 형태를 이루고 있습니다. 이 중 전선 하나를 끊어서 전력망을 두 개의 독립된 네트워크로 나눌 때, 두 전력망이 가지고 있는 송전탑 개수의 차이(절대값)를 최소로 만드는 문제입니다.
@@ -56,3 +61,41 @@ def solution(n, wires):
 - `BFS`를 통해 임의의 노드(여기서는 1번)가 포함된 네트워크의 크기(`count`)를 구합니다.
 - 전선을 끊으면 그래프는 두 개의 컴포넌트로 나뉘므로, 전체 $n$에서 한쪽 크기 `count`를 빼면 다른 쪽 크기가 나옵니다.
 - 두 크기의 차이(`abs(n - 2*count)`)의 최솟값을 갱신합니다.
+
+
+## 나의 풀이
+주석때문에 뭐가 안보여서...
+
+```python
+from collections import deque
+
+def solution(n, wires):
+    answer = n
+    
+    for i in range(len(wires)):
+        graph = [[] for _ in range(n+1)]
+        for j in range(len(wires)):
+            if i == j: continue
+            v1,v2 = wires[j]
+            graph[v1].append(v2)
+            graph[v2].append(v1)
+        
+        visited = [False] * (n+1)
+        queue = deque([1])
+        visited[1] = True
+        count = 1
+        
+        while queue:
+            curr = queue.popleft()
+            for next in graph[curr]:
+                if not visited[next]:
+                    visited[next] = True
+                    queue.append(next)
+                    count += 1
+        
+        ## 한쪽 전력망의 개수가 count 이면, 다른 한쪽은 n - count
+        diff = abs(count - (n-count))
+        answer = min(answer, diff)
+    
+    return answer
+```
