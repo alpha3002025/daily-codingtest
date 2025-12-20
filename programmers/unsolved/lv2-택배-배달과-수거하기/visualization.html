@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>택배 배달과 수거하기 시각화 (Greedy)</title>
+    <style>
+        :root {
+            --bg-color: #1a1b26;
+            --card-bg: #24283b;
+            --primary: #7aa2f7;
+            --secondary: #bb9af7;
+            --success: #9ece6a;
+            --danger: #f7768e;
+            --text-main: #c0caf5;
+            --text-muted: #565f89;
+            --border: #414868;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+        }
+
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        input {
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #15161e;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: #15161e;
+        }
+
+        .btn-step {
+            background: var(--border);
+            color: var(--text-main);
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Visualization Area */
+        .viz-stage {
+            position: relative;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column-reverse;
+            /* Bottom aligned houses */
+            padding-bottom: 40px;
+            overflow-x: auto;
+            align-items: flex-start;
+        }
+
+        .road {
+            position: absolute;
+            bottom: 30px;
+            left: 50px;
+            right: 20px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .warehouse {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 40px;
+            height: 40px;
+            background: var(--text-muted);
+            border-radius: 4px;
+            display: grid;
+            place-items: center;
+            font-size: 20px;
+            z-index: 2;
+        }
+
+        .houses-container {
+            display: flex;
+            margin-left: 60px;
+            /* Space for warehouse */
+            gap: 40px;
+            position: relative;
+            bottom: 20px;
+        }
+
+        .house-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 40px;
+            transition: opacity 0.3s;
+        }
+
+        .house-group.active::after {
+            content: "▼";
+            position: absolute;
+            top: -30px;
+            color: var(--secondary);
+            font-size: 20px;
+            animation: bounce 1s infinite;
+        }
+
+        .house {
+            width: 30px;
+            height: 30px;
+            background: var(--border);
+            clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+            margin-bottom: 5px;
+        }
+
+        .bars {
+            display: flex;
+            gap: 4px;
+            height: 100px;
+            align-items: flex-end;
+            margin-bottom: 5px;
+        }
+
+        .bar {
+            width: 12px;
+            border-radius: 2px;
+            transition: height 0.3s ease;
+            position: relative;
+        }
+
+        .bar-val {
+            position: absolute;
+            top: -20px;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .bar.delivery {
+            background: var(--danger);
+        }
+
+        .bar.pickup {
+            background: var(--success);
+        }
+
+        .house-label {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Truck Animation */
+        .truck {
+            position: absolute;
+            bottom: 35px;
+            left: 0;
+            font-size: 30px;
+            transition: left 0.5s ease-in-out;
+            z-index: 10;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .stat-value.highlight {
+            color: var(--secondary);
+        }
+
+        .log-panel {
+            height: 150px;
+            overflow-y: auto;
+            background: #15161e;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            border: 1px solid var(--border);
+        }
+
+        .log-item {
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+
+        .log-item.active {
+            opacity: 1;
+            color: var(--primary);
+            font-weight: bold;
+            border-left: 2px solid var(--primary);
+            padding-left: 8px;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            margin-top: 10px;
+            justify-content: flex-end;
+        }
+
+        .legend-item {
+            display: flex;
+            alignItems: center;
+            gap: 5px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot.d {
+            background: var(--danger);
+        }
+
+        .dot.p {
+            background: var(--success);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>📦 택배 배달과 수거하기 시각화</h1>
+
+        <div class="card">
+            <div class="controls">
+                <div class="input-group">
+                    <label>Cap (트럭 용량)</label>
+                    <input type="number" id="cap" value="4" min="1">
+                </div>
+                <div class="input-group">
+                    <label>Deliveries (콤마 구분)</label>
+                    <input type="text" id="deliveries" value="1, 0, 3, 1, 2">
+                </div>
+                <div class="input-group">
+                    <label>Pickups (콤마 구분)</label>
+                    <input type="text" id="pickups" value="0, 3, 0, 4, 0">
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-primary" onclick="initSimulation()">Reset & Start</button>
+                    <button class="btn-step" id="prevBtn" onclick="prevStep()" disabled>◀ Prev</button>
+                    <button class="btn-step" id="nextBtn" onclick="nextStep()" disabled>Next ▶</button>
+                </div>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="dot d"></div>배달(Delivery)
+                </div>
+                <div class="legend-item">
+                    <div class="dot p"></div>수거(Pickup)
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="dashboard">
+                <div class="stat-box">
+                    <div class="stat-label">현재 위치 (i+1)</div>
+                    <div class="stat-value" id="disp-idx">-</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">배달 누적 (d_val)</div>
+                    <div class="stat-value" id="disp-dval">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">수거 누적 (p_val)</div>
+                    <div class="stat-value" id="disp-pval">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">총 이동 거리 (Answer)</div>
+                    <div class="stat-value highlight" id="disp-ans">0</div>
+                </div>
+            </div>
+
+            <div class="viz-stage" id="stage">
+                <div class="warehouse">🏭</div>
+                <div class="truck" id="truck">🚚</div>
+                <div class="road"></div>
+                <div class="houses-container" id="houses">
+                    <!-- Houses generated by JS -->
+                </div>
+            </div>
+
+            <div class="log-panel" id="logPanel">
+                <!-- Logs goes here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let animationSteps = [];
+        let currentStepIndex = -1;
+        let chartScale = 1; // logical max value to px conversion
+
+        function parseInput() {
+            const cap = parseInt(document.getElementById('cap').value);
+            const dStr = document.getElementById('deliveries').value;
+            const pStr = document.getElementById('pickups').value;
+
+            const deliveries = dStr.split(',').map(s => parseInt(s.trim()) || 0);
+            const pickups = pStr.split(',').map(s => parseInt(s.trim()) || 0);
+
+            // Adjust length if mismatch
+            const n = Math.max(deliveries.length, pickups.length);
+            while (deliveries.length < n) deliveries.push(0);
+            while (pickups.length < n) pickups.push(0);
+
+            return { cap, n, deliveries, pickups };
+        }
+
+        function initSimulation() {
+            const data = parseInput();
+
+            // Render basic UI
+            renderHouses(data);
+
+            // Calculate Simulation Steps
+            animationSteps = calculateSteps(data);
+            currentStepIndex = -1;
+
+            // UI Reset
+            document.getElementById('truck').style.left = '0px';
+            document.getElementById('logPanel').innerHTML = '';
+            document.getElementById('disp-ans').innerText = '0';
+            document.getElementById('disp-dval').innerText = '0';
+            document.getElementById('disp-pval').innerText = '0';
+            document.getElementById('disp-idx').innerText = '-';
+
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function renderHouses(data) {
+            const container = document.getElementById('houses');
+            container.innerHTML = '';
+
+            // Find max value for bar scaling
+            const maxVal = Math.max(data.cap, ...data.deliveries, ...data.pickups, 5);
+            const maxHeightPx = 100;
+
+            // Render houses
+            data.deliveries.forEach((d, idx) => {
+                const p = data.pickups[idx];
+
+                const group = document.createElement('div');
+                group.className = 'house-group';
+                group.id = `house-${idx}`;
+
+                // Bars
+                const bars = document.createElement('div');
+                bars.className = 'bars';
+
+                const dBar = document.createElement('div');
+                dBar.className = 'bar delivery';
+                dBar.style.height = `${(d / maxVal) * maxHeightPx}px`;
+                dBar.innerHTML = d > 0 ? `<div class="bar-val">${d}</div>` : '';
+
+                const pBar = document.createElement('div');
+                pBar.className = 'bar pickup';
+                pBar.style.height = `${(p / maxVal) * maxHeightPx}px`;
+                pBar.innerHTML = p > 0 ? `<div class="bar-val">${p}</div>` : '';
+
+                bars.appendChild(dBar);
+                bars.appendChild(pBar);
+
+                const roof = document.createElement('div');
+                roof.className = 'house';
+
+                const label = document.createElement('div');
+                label.className = 'house-label';
+                label.innerText = (idx + 1);
+
+                group.appendChild(bars);
+                group.appendChild(roof);
+                group.appendChild(label);
+
+                container.appendChild(group);
+            });
+        }
+
+        function calculateSteps({ cap, n, deliveries, pickups }) {
+            const steps = [];
+            let d_val = 0;
+            let p_val = 0;
+            let answer = 0;
+
+            // Initial state
+            steps.push({
+                idx: -1,
+                d_val: 0,
+                p_val: 0,
+                answer: 0,
+                highlight: -1,
+                log: "시뮬레이션 시작. 가장 먼 집부터 탐색합니다.",
+                truckX: 0
+            });
+
+            // Logic mirroring the Python code
+            for (let i = n - 1; i >= 0; i--) {
+                d_val += deliveries[i];
+                p_val += pickups[i];
+
+                steps.push({
+                    idx: i,
+                    d_val,
+                    p_val,
+                    answer,
+                    highlight: i,
+                    log: `[집 ${i + 1}] 배달(${deliveries[i]})과 수거(${pickups[i]})를 장부에 추가. 현재 누적: d=${d_val}, p=${p_val}`,
+                    truckX: getHousePos(i) // Truck conceptually at house i? No, logic is abstract. But we scan here.
+                });
+
+                while (d_val > 0 || p_val > 0) {
+                    d_val -= cap;
+                    p_val -= cap;
+                    answer += (i + 1) * 2;
+
+                    steps.push({
+                        idx: i,
+                        d_val,
+                        p_val,
+                        answer,
+                        highlight: i,
+                        log: `⚠️ 누적량 초과 (>0)! 트럭 출동. 왕복 거리 2*${i + 1} = ${2 * (i + 1)} 추가. 용량 ${cap}만큼 차감. 잔여: d=${d_val}, p=${p_val}`,
+                        truckX: getHousePos(i),
+                        isTrip: true
+                    });
+                }
+            }
+
+            steps.push({
+                idx: -2,
+                d_val,
+                p_val,
+                answer,
+                highlight: -1,
+                log: `탐색 종료. 총 최소 이동 거리: ${answer}`,
+                truckX: 0
+            });
+
+            return steps;
+        }
+
+        function getHousePos(idx) {
+            // Calculate approximate pixel position relative to the truck container for animation
+            // Warehouse is at 0. First house group starts at margin.
+            // warehouse width 40, margin 60 -> start at 60?
+            // gap 40, house width 40.
+            if (idx < 0) return 0;
+            const startX = 60 + 20; // 60 margin + half of house width
+            const pitch = 40 + 40; // width + gap
+            return startX + (idx * pitch) - 20; // center of house
+        }
+
+        function nextStep() {
+            if (currentStepIndex < animationSteps.length - 1) {
+                currentStepIndex++;
+                applyStep(animationSteps[currentStepIndex]);
+            }
+            updateButtons();
+        }
+
+        function prevStep() {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                applyStep(animationSteps[currentStepIndex]);
+            }
+            updateButtons();
+        }
+
+        function applyStep(step) {
+            // Update Dashboard
+            document.getElementById('disp-ans').innerText = step.answer;
+            document.getElementById('disp-dval').innerText = step.d_val;
+            document.getElementById('disp-pval').innerText = step.p_val;
+            document.getElementById('disp-idx').innerText = step.idx >= 0 ? step.idx + 1 : (step.idx === -2 ? "Done" : "-");
+
+            // Update Logs: Re-render logs up to currentStepIndex
+            const logPanel = document.getElementById('logPanel');
+            logPanel.innerHTML = ''; // Clear logs
+
+            for (let i = 0; i <= currentStepIndex; i++) {
+                const s = animationSteps[i];
+                if (!s.log) continue;
+
+                const logItem = document.createElement('div');
+                logItem.className = 'log-item';
+                if (i === currentStepIndex) logItem.classList.add('active');
+                logItem.innerText = s.log;
+                logPanel.appendChild(logItem);
+            }
+            logPanel.scrollTop = logPanel.scrollHeight;
+
+            // Highlight House
+            document.querySelectorAll('.house-group').forEach(el => el.classList.remove('active'));
+            if (step.highlight >= 0) {
+                const target = document.getElementById(`house-${step.highlight}`);
+                if (target) target.classList.add('active');
+            }
+
+            // Move Truck
+            const truck = document.getElementById('truck');
+            truck.style.left = step.truckX + 'px';
+
+            if (step.isTrip) {
+                truck.style.transform = "scale(1.2)";
+                setTimeout(() => truck.style.transform = "scale(1)", 200);
+            }
+        }
+
+        function updateButtons() {
+            document.getElementById('prevBtn').disabled = currentStepIndex <= 0;
+            document.getElementById('nextBtn').disabled = currentStepIndex >= animationSteps.length - 1;
+        }
+
+        // Init on load
+        window.addEventListener('load', initSimulation);
+
+    </script>
+</body>
+
+</html>
