@@ -39,3 +39,27 @@ def solution(s):
 ### 코드 설명
 - 문자열 크기가 최대 150,000이지만, 이진 변환을 하면 길이가 로그 스케일로 급격히 줄어들기 때문에 반복 횟수는 매우 적습니다.
 - `bin()` 함수의 결과인 `0b110...`에서 `0b`를 제거하기 위해 `[2:]` 슬라이싱을 합니다.
+
+
+## 나의 풀이
+```python
+def solution(s):
+    loop_count = 0
+    removed_zero_cnt = 0
+    
+    while s != "1":
+        loop_count += 1
+        
+        ## 0의 개수 세기, 제거된 0ㅇ의 개수 누적
+        zero_cnt = s.count('0')
+        removed_zero_cnt += zero_cnt
+        
+        ## 0 을 제거 후 남은 1의 개수 -> 길이
+        length_one = len(s) - zero_cnt
+        
+        ## 길이를 2진수 문자열로 변환
+        s = bin(length_one)[2:]
+    
+    return [loop_count, removed_zero_cnt]
+```
+
