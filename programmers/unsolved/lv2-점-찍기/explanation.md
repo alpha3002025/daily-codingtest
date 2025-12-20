@@ -33,3 +33,35 @@ def solution(k, d):
         
     return answer
 ```
+
+## 참고 문법: `math.isqrt(n)`
+- **기능**: 양의 정수 `n`의 **정수 제곱근(Integer Square Root)**을 반환합니다.
+- **수식**: $\lfloor \sqrt{n} \rfloor$ (제곱근을 내림한 정수 값)
+- **특징**: `math.sqrt()`는 부동소수점(`float`)을 반환하지만, `isqrt`는 정확한 `int`값을 반환하므로 **큰 정수 연산**에서 오차 없이 안전합니다. (Python 3.8+)
+- **예시**:
+    ```python
+    import math
+    print(math.isqrt(10)) # 3 (3*3=9 <= 10)
+    print(math.isqrt(16)) # 4
+    ```
+
+<br/>
+
+## 나의 풀이
+```python
+import math
+
+def solution(k, d):
+    answer = 0
+    
+    ## x 좌표가 0, k, 2k, 3k, ... 으로 증가
+    for x in range(0, d+1, k):
+        ## 피타고라스 정의로 y의 길이 구한다.
+        max_distance_y = math.isqrt(d**2 - x**2)
+        
+        ## 0 부터 max_distance_y 사이의 k 의 배수의 개수
+        count_y = max_distance_y // k + 1
+        
+        answer += count_y
+    return answer
+```
