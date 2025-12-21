@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +39,11 @@
             gap: 20px;
         }
 
-        h1 { color: var(--primary); margin-bottom: 20px; text-align: center; }
+        h1 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
 
         .card {
             background: var(--card-bg);
@@ -62,7 +67,11 @@
             gap: 5px;
         }
 
-        label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+        label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
 
         input {
             background: var(--bg-color);
@@ -86,7 +95,11 @@
             transition: all 0.2s;
             margin-top: 20px;
         }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
 
         .viz-area {
             position: relative;
@@ -94,7 +107,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-end; /* build from bottom */
+            justify-content: flex-end;
+            /* build from bottom */
             padding: 20px;
             overflow: hidden;
         }
@@ -102,14 +116,25 @@
         .round-row {
             display: flex;
             justify-content: center;
-            gap: 20px; /* dynamic */
+            gap: 20px;
+            /* dynamic */
             margin-bottom: 40px;
             width: 100%;
             position: relative;
             animation: fadeIn 0.5s ease-out;
         }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         .player-node {
             width: 40px;
@@ -133,7 +158,7 @@
             border-color: var(--success);
             box-shadow: 0 0 10px rgba(158, 206, 106, 0.4);
         }
-        
+
         .player-node.active-b {
             background: var(--danger);
             color: #15161e;
@@ -157,7 +182,7 @@
             top: -20px;
             z-index: 1;
         }
-        
+
         .round-label {
             position: absolute;
             left: 20px;
@@ -183,7 +208,7 @@
             font-weight: bold;
             color: var(--accent);
         }
-        
+
         .steps-log {
             display: flex;
             flex-direction: column;
@@ -200,265 +225,356 @@
             font-size: 13px;
             color: var(--text-muted);
         }
-        .step-val { color: var(--text-main); }
+
+        .step-val {
+            color: var(--text-main);
+        }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>🏆 예상 대진표 시각화</h1>
-    
-    <div class="card">
-        <div class="controls">
-            <div class="input-group">
-                <label>참가자 수 (N)</label>
-                <input type="number" id="inp-n" value="8" min="2" max="32" step="2">
+    <div class="container">
+        <h1>🏆 예상 대진표 시각화</h1>
+
+        <div class="card">
+            <div class="controls">
+                <div class="input-group">
+                    <label>참가자 수 (N)</label>
+                    <input type="number" id="inp-n" value="8" min="2" max="32" step="2">
+                </div>
+                <div class="input-group">
+                    <label>A 참가자</label>
+                    <input type="number" id="inp-a" value="4" min="1">
+                </div>
+                <div class="input-group">
+                    <label>B 참가자</label>
+                    <input type="number" id="inp-b" value="7" min="1">
+                </div>
             </div>
-            <div class="input-group">
-                <label>A 참가자</label>
-                <input type="number" id="inp-a" value="4" min="1">
-            </div>
-            <div class="input-group">
-                <label>B 참가자</label>
-                <input type="number" id="inp-b" value="7" min="1">
+            <div style="text-align:center;">
+                <button onclick="initSimulation()">Reset (Start)</button>
+                <div style="display: inline-block; width: 20px;"></div>
+                <button id="btn-prev" onclick="prevStep()" disabled
+                    style="background:var(--border); color:var(--text-main)">◀ Prev</button>
+                <button id="btn-next" onclick="nextStep()" disabled
+                    style="background:var(--secondary); color:#15161e">Next ▶</button>
             </div>
         </div>
-        <div style="text-align:center;">
-             <button onclick="runSimulation()">시뮬레이션 시작</button>
+
+        <div class="card">
+            <div class="info-panel" id="result-msg">결과가 여기에 표시됩니다.</div>
+            <div class="viz-area" id="viz-root">
+                <!-- Visualization rendered here -->
+            </div>
+            <div class="steps-log" id="log-root"></div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="info-panel" id="result-msg">결과가 여기에 표시됩니다.</div>
-        <div class="viz-area" id="viz-root">
-            <!-- Visualization rendered here -->
-        </div>
-        <div class="steps-log" id="log-root"></div>
-    </div>
-</div>
+    <script>
+        function runSimulation() {
+            const n = parseInt(document.getElementById('inp-n').value) || 8;
+            let a = parseInt(document.getElementById('inp-a').value) || 4;
+            let b = parseInt(document.getElementById('inp-b').value) || 7;
 
-<script>
-    function runSimulation() {
-        const n = parseInt(document.getElementById('inp-n').value) || 8;
-        let a = parseInt(document.getElementById('inp-a').value) || 4;
-        let b = parseInt(document.getElementById('inp-b').value) || 7;
-        
-        if(a > n || b > n || a < 1 || b < 1) {
-            alert(`참가자 번호는 1 ~ ${n} 사이여야 합니다.`);
-            return;
+            if (a > n || b > n || a < 1 || b < 1) {
+                alert(`참가자 번호는 1 ~ ${n} 사이여야 합니다.`);
+                return;
+            }
+
+            const vizRoot = document.getElementById('viz-root');
+            const logRoot = document.getElementById('log-root');
+            const resultMsg = document.getElementById('result-msg');
+
+            vizRoot.innerHTML = '';
+            logRoot.innerHTML = '';
+            resultMsg.innerText = '계산 중...';
+
+            let round = 0;
+            let currentA = a;
+            let currentB = b;
+            let maxRound = Math.log2(n);
+
+            // Data snapshot for rendering
+            const history = [];
+
+            // Logic loop
+            while (true) {
+                round++;
+                history.push({
+                    round: round,
+                    a: currentA,
+                    b: currentB,
+                    meet: currentA === currentB // actually logic checks a==b after update? 
+                    // The problem says "answer" is the round they meet.
+                    // The logic: a = (a+1)//2, b=(b+1)//2 -> if a==b break. 
+                    // Wait, if a=1, b=2. (a+1)//2 = 1, (b+1)//2 = 1. -> Meet at R1.
+                    // So verify BEFORE or calculate NEXT?
+                    // The python code: 
+                    // while a != b:
+                    //    a = (a+1)//2
+                    //    b = (b+1)//2
+                    //    ans += 1
+                    // return ans
+
+                    // So, initially A!=B.
+                    // Loop 1: R1 calc -> check if same.
+                });
+
+                // Calculate Next
+                const nextA = Math.floor((currentA + 1) / 2);
+                const nextB = Math.floor((currentB + 1) / 2);
+
+                // Check if they become same NEXT round (means they meet THIS round)
+                if (nextA === nextB && currentA !== currentB) {
+                    // Wait, logic check:
+                    // A=4, B=7
+                    // R1: A->2, B->4. Ans=1. (Meet? No)
+                    // R2: A->1, B->2. Ans=2. (Meet? No)
+                    // R3: A->1, B->1. Ans=3. (Meet? YES)
+
+                    // The loop should run until they are equal
+                }
+
+                // Let's just follow the python code faithfully for values
+            }
         }
 
-        const vizRoot = document.getElementById('viz-root');
-        const logRoot = document.getElementById('log-root');
-        const resultMsg = document.getElementById('result-msg');
-        
-        vizRoot.innerHTML = '';
-        logRoot.innerHTML = '';
-        resultMsg.innerText = '계산 중...';
+        let history = [];
+        let currentStep = -1;
 
-        let round = 0;
-        let currentA = a;
-        let currentB = b;
-        let maxRound = Math.log2(n);
-        
-        // Data snapshot for rendering
-        const history = [];
+        function initSimulation() {
+            const nNodes = parseInt(document.getElementById('inp-n').value) || 8;
+            let a = parseInt(document.getElementById('inp-a').value);
+            let b = parseInt(document.getElementById('inp-b').value);
 
-        // Logic loop
-        while(true) {
-            round++;
+            const vizRoot = document.getElementById('viz-root');
+            const logRoot = document.getElementById('log-root');
+            const resultMsg = document.getElementById('result-msg');
+
+            // Reset UI
+            vizRoot.innerHTML = '';
+            logRoot.innerHTML = '';
+            resultMsg.innerText = '준비 완료. Next 버튼을 눌러 진행하세요.';
+            document.getElementById('btn-prev').disabled = true;
+            document.getElementById('btn-next').disabled = false;
+
+            // Calculate all steps beforehand
+            history = [];
+            let round = 0;
+            let currA = a;
+            let currB = b;
+
+            // Step 0: Start
             history.push({
-                round: round,
-                a: currentA,
-                b: currentB,
-                meet: currentA === currentB // actually logic checks a==b after update? 
-                // The problem says "answer" is the round they meet.
-                // The logic: a = (a+1)//2, b=(b+1)//2 -> if a==b break. 
-                // Wait, if a=1, b=2. (a+1)//2 = 1, (b+1)//2 = 1. -> Meet at R1.
-                // So verify BEFORE or calculate NEXT?
-                // The python code: 
-                // while a != b:
-                //    a = (a+1)//2
-                //    b = (b+1)//2
-                //    ans += 1
-                // return ans
-                
-                // So, initially A!=B.
-                // Loop 1: R1 calc -> check if same.
+                round: 0,
+                a: currA,
+                b: currB,
+                isMet: false,
+                msg: "시뮬레이션 시작"
             });
 
-            // Calculate Next
-            const nextA = Math.floor((currentA + 1) / 2);
-            const nextB = Math.floor((currentB + 1) / 2);
-            
-            // Check if they become same NEXT round (means they meet THIS round)
-            if(nextA === nextB && currentA !== currentB) { 
-                // Wait, logic check:
-                // A=4, B=7
-                // R1: A->2, B->4. Ans=1. (Meet? No)
-                // R2: A->1, B->2. Ans=2. (Meet? No)
-                // R3: A->1, B->1. Ans=3. (Meet? YES)
-                
-                // The loop should run until they are equal
+            // Loop Calculation
+            while (currA !== currB) {
+                round++;
+                currA = Math.floor((currA + 1) / 2);
+                currB = Math.floor((currB + 1) / 2);
+                const isMet = currA === currB;
+
+                history.push({
+                    round: round,
+                    a: currA,
+                    b: currB,
+                    isMet: isMet,
+                    msg: `Round ${round}: A -> ${currA}, B -> ${currB}` + (isMet ? " (MATCH!)" : "")
+                });
             }
 
-            // Let's just follow the python code faithfully for values
-        }
-    }
-
-    // Refined Logic Function for Animation
-    async function runSimulation() {
-        const nNodes = parseInt(document.getElementById('inp-n').value) || 8;
-        let a = parseInt(document.getElementById('inp-a').value);
-        let b = parseInt(document.getElementById('inp-b').value);
-
-        const vizRoot = document.getElementById('viz-root');
-        const logRoot = document.getElementById('log-root');
-        const resultMsg = document.getElementById('result-msg');
-        
-        vizRoot.innerHTML = '';
-        logRoot.innerHTML = '';
-        
-        let round = 0;
-        
-        // Initial State (Round 0 - Just showing starting position)
-        // Actually, let's visualize from bottom up like a tree
-        // Or just show rows of transformation as described in the md file
-        
-        // R0: 1 2 3 [4] 5 6 [7] 8
-        //      |     |     |    |
-        // R1:  1    [2]    3   [4]
-        //        |           |
-        // R2:   [1]         [2]
-        //            |
-        // R3:       [1]  <- MEET
-        
-        // Loop logic
-        let currA = a;
-        let currB = b;
-        let stepLog = [];
-        
-        // Initial visual row
-        await drawRow(0, currA, currB, false);
-
-        while(currA !== currB) {
-            round++;
-            
-            // Logic
-            currA = Math.floor((currA + 1) / 2);
-            currB = Math.floor((currB + 1) / 2);
-            
-            const isMet = currA === currB;
-            
-            // Log
-            const logItem = document.createElement('div');
-            logItem.className = 'step-item';
-            logItem.innerHTML = `Round ${round}: A becomes <span class="step-val">${currA}</span>, B becomes <span class="step-val">${currB}</span>`;
-            if(isMet) logItem.innerHTML += " <b style='color:var(--accent)'>(MATCH!)</b>";
-            logRoot.appendChild(logItem);
-            
-            // Draw
-            await new Promise(r => setTimeout(r, 600)); // delay
-            await drawRow(round, currA, currB, isMet);
-        }
-        
-        resultMsg.innerHTML = `최종 결과: <span class="match-highlight">${round}번째 라운드</span>에서 만납니다.`;
-    }
-
-    async function drawRow(roundIdx, valA, valB, isMet) {
-        const container = document.getElementById('viz-root');
-        
-        const row = document.createElement('div');
-        row.className = 'round-row';
-        
-        if(roundIdx > 0) {
-            const label = document.createElement('div');
-            label.className = 'round-label';
-            label.innerText = `Round ${roundIdx}`;
-            row.appendChild(label);
-        } else {
-            const label = document.createElement('div');
-            label.className = 'round-label';
-            label.innerText = `Start`;
-            row.appendChild(label);
+            currentStep = -1;
+            nextStep(); // Show Step 0 immediately
         }
 
-        // We don't draw ALL N nodes because it gets too big.
-        // We only show the progress of A and B nodes contextually?
-        // No, let's just show A and B nodes floating to represent their ID change.
-        
-        const nodeA = createNode(valA, 'A', isMet);
-        const nodeB = createNode(valB, 'B', isMet);
-        
-        // Determine order
-        if(valA < valB) {
-            row.appendChild(nodeA);
-            if(!isMet) {
-                addSpacer(row);
-                row.appendChild(nodeB);
+        function nextStep() {
+            if (currentStep < history.length - 1) {
+                currentStep++;
+                renderStep();
             }
-        } else if (valA > valB) {
-            row.appendChild(nodeB);
-            if(!isMet) {
-                addSpacer(row);
-                row.appendChild(nodeA);
-            }
-        } else {
-            // Equal - merged
-            // This case (isMet) handled above by reusing one? 
-            // Actually if isMet, valA == valB. We should show one node "Match"
-             row.innerHTML = ''; // clear
-             const label = document.createElement('div');
-             label.className = 'round-label';
-             label.innerText = `Round ${roundIdx} (End)`;
-             row.appendChild(label);
-             
-             const winNode = document.createElement('div');
-             winNode.className = 'player-node winner';
-             winNode.innerText = `${valA} vs ${valB}`;
-             winNode.style.width = "100px";
-             winNode.style.borderRadius = "20px";
-             row.appendChild(winNode);
+            updateButtons();
         }
 
-        // Prepend because we want bottom-up? or Top-down?
-        // Logic explanation usually goes Top (Start) -> Bottom (End).
-        // Let's append.
-        container.appendChild(row);
-        
-        // Scroll to bottom
-        container.scrollTop = container.scrollHeight;
-    }
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep();
+            }
+            updateButtons();
+        }
 
-    function createNode(val, type, isMet) {
-        const div = document.createElement('div');
-        div.className = `player-node active-${type.toLowerCase()}`;
-        div.innerText = val;
-        
-        // Tooltip or small label
-        const tag = document.createElement('span');
-        tag.style.position = 'absolute';
-        tag.style.bottom = '-20px';
-        tag.style.fontSize = '10px';
-        tag.style.color = 'var(--text-muted)';
-        tag.innerText = type;
-        div.appendChild(tag);
-        
-        return div;
-    }
-    
-    function addSpacer(row) {
-        const line = document.createElement('div');
-        line.style.width = "50px";
-        line.style.height = "2px";
-        line.style.background = "var(--border)";
-        line.style.alignSelf = "center";
-        row.appendChild(line);
-    }
-    
-    // Init with default
-    window.onload = runSimulation;
+        function updateButtons() {
+            document.getElementById('btn-prev').disabled = currentStep <= 0;
+            document.getElementById('btn-next').disabled = currentStep >= history.length - 1;
 
-</script>
+            // Final result message
+            if (currentStep === history.length - 1) {
+                const finalStep = history[history.length - 1];
+                document.getElementById('result-msg').innerHTML = `최종 결과: <span class="match-highlight">${finalStep.round}번째 라운드</span>에서 만납니다.`;
+            } else {
+                document.getElementById('result-msg').innerText = `진행 중... (Step ${currentStep}/${history.length - 1})`;
+            }
+        }
+
+        function renderStep() {
+            const vizRoot = document.getElementById('viz-root');
+            const logRoot = document.getElementById('log-root');
+
+            // Clear and rebuild up to current step
+            vizRoot.innerHTML = '';
+            logRoot.innerHTML = '';
+
+            for (let i = 0; i <= currentStep; i++) {
+                const step = history[i];
+                drawRow(step.round, step.a, step.b, step.isMet);
+
+                if (i > 0) { // Log skip step 0
+                    const logItem = document.createElement('div');
+                    logItem.className = 'step-item';
+                    if (i === currentStep) logItem.style.color = "var(--primary)";
+                    logItem.innerText = step.msg;
+                    logRoot.appendChild(logItem);
+                }
+            }
+
+            vizRoot.scrollTop = 0;
+            logRoot.scrollTop = logRoot.scrollHeight;
+        }
+
+        function drawRow(roundIdx, valA, valB, isMet) {
+            const container = document.getElementById('viz-root');
+
+            const row = document.createElement('div');
+            row.className = 'round-row';
+
+            if (roundIdx > 0) {
+                const label = document.createElement('div');
+                label.className = 'round-label';
+                label.innerText = `Round ${roundIdx}`;
+                row.appendChild(label);
+            } else {
+                const label = document.createElement('div');
+                label.className = 'round-label';
+                label.innerText = `Start (Leaves)`;
+                row.appendChild(label);
+            }
+
+            // Tree Visualization Logic
+            // We want to preserve relative horizontal positions to look like a tree.
+            // The width of the container is fixed-ish. Let's use flex-basis or exact widths.
+
+            // Actually, a simpler way for 1D stacking is to have placeholder nodes.
+            // A full tree has N / (2^round) nodes.
+            // We only care about A and B paths.
+
+            // Let's create a container for nodes that has relative spacing
+            const nodesContainer = document.createElement('div');
+            nodesContainer.style.display = 'flex';
+            nodesContainer.style.flex = '1';
+            nodesContainer.style.justifyContent = 'space-around'; // Distribute evenly
+            nodesContainer.style.alignItems = 'center';
+
+            // Logic:
+            // Round 0: 8 slots. A at pos A-1, B at pos B-1. Others are faint dots.
+            // Round 1: 4 slots. A at pos (A+1)//2 -1.
+
+            // Determine total max slots in this row
+            const nNodes = parseInt(document.getElementById('inp-n').value) || 8;
+            const slotsInRow = nNodes / Math.pow(2, roundIdx);
+
+            for (let i = 1; i <= slotsInRow; i++) {
+                // Check if this slot corresponds to A or B
+                let content = null;
+                let type = null;
+
+                if (i === valA) {
+                    content = valA;
+                    type = 'A';
+                } else if (i === valB) {
+                    content = valB;
+                    type = 'B';
+                }
+
+                if (isMet && valA === valB && i === valA) {
+                    content = `${valA} vs ${valB}`;
+                    type = 'Winner';
+                }
+
+                const nodeWrapper = document.createElement('div');
+                nodeWrapper.style.display = 'flex';
+                nodeWrapper.style.flexDirection = 'column';
+                nodeWrapper.style.alignItems = 'center';
+                nodeWrapper.style.width = '40px';
+
+                if (content) {
+                    if (type === 'Winner') {
+                        const winNode = document.createElement('div');
+                        winNode.className = 'player-node winner';
+                        winNode.innerText = "MATCH";
+                        winNode.style.fontSize = "10px";
+                        nodeWrapper.appendChild(winNode);
+                    } else {
+                        const node = createNode(content, type);
+                        nodeWrapper.appendChild(node);
+
+                        // Draw line to parent if this is not the last round (future improvement)
+                    }
+                } else {
+                    // Empty placeholder slot
+                    const dot = document.createElement('div');
+                    dot.style.width = '8px';
+                    dot.style.height = '8px';
+                    dot.style.backgroundColor = 'var(--border)';
+                    dot.style.borderRadius = '50%';
+                    dot.style.marginTop = '16px'; // center align bit lower
+                    nodeWrapper.appendChild(dot);
+                }
+
+                nodesContainer.appendChild(nodeWrapper);
+            }
+
+            row.appendChild(nodesContainer);
+
+            // Insert at TOP to build tree upwards (Root at top, leaves at bottom)
+            container.prepend(row);
+        } // End drawRow
+
+        function createNode(val, type) {
+            const div = document.createElement('div');
+            div.className = `player-node active-${type.toLowerCase()}`;
+            div.innerText = val;
+
+            const tag = document.createElement('span');
+            tag.style.position = 'absolute';
+            tag.style.bottom = '-20px';
+            tag.style.fontSize = '10px';
+            tag.style.color = 'var(--text-muted)';
+            tag.innerText = type;
+            div.appendChild(tag);
+
+            return div;
+        }
+
+        function addSpacer(row) {
+            const line = document.createElement('div');
+            line.style.width = "50px";
+            line.style.height = "2px";
+            line.style.background = "var(--border)";
+            line.style.alignSelf = "center";
+            row.appendChild(line);
+        }
+
+        // Init with default
+        window.onload = initSimulation;
+
+    </script>
 </body>
+
 </html>
