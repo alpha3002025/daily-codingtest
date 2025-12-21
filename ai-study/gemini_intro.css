@@ -1,0 +1,180 @@
+/* Reset and Base Styles */
+:root {
+    --bg-color: #0e0e0e; /* Deep dark background */
+    --text-primary: #ffffff;
+    --text-secondary: #bdc1c6;
+    --text-link: #4e81ee;
+    --kbd-bg: #2d2e31;
+    --kbd-border: #5f6368;
+    --divider-color: #3c4043;
+    --gradient-start: #4E81EE;
+    --gradient-end: #9C55F5;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.container {
+    max-width: 800px;
+    width: 100%;
+}
+
+/* Typography */
+a {
+    color: var(--text-link);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+a:hover {
+    text-decoration: underline;
+    opacity: 0.9;
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: fadeInDown 0.8s ease-out;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+/* Gemini Gradient Text */
+.gemini-text {
+    background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    line-height: 1.6;
+}
+
+/* Divider */
+.divider {
+    border: none;
+    height: 1px;
+    background-color: var(--divider-color);
+    margin: 2rem 0;
+    opacity: 0.5;
+}
+
+/* Features Section */
+.features {
+    animation: fadeInUp 0.8s ease-out 0.2s backwards;
+}
+
+.features h2 {
+    font-size: 1.75rem;
+    font-weight: 400;
+    margin-bottom: 1rem;
+}
+
+.features-intro {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.feature-list {
+    list-style: none; /* Removed default bullets */
+    padding-left: 1rem;
+}
+
+.feature-list li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.feature-list li::before {
+    content: "•"; /* Custom bullet */
+    color: var(--text-primary);
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+/* Keyboard Shortcuts */
+kbd {
+    background-color: var(--kbd-bg);
+    border: 1px solid var(--kbd-border);
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
+    font-family: inherit;
+    font-size: 0.9em;
+    color: var(--text-primary);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+}
+
+.icon-placeholder {
+    display: inline-block;
+    filter: drop-shadow(0 0 2px rgba(156, 85, 245, 0.5));
+}
+
+.footer-link {
+    margin-top: 2rem;
+    color: var(--text-secondary);
+}
+
+/* Animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .title {
+        font-size: 2rem;
+    }
+    .hero {
+        text-align: left;
+    }
+    .subtitle br {
+        display: none;
+    }
+}

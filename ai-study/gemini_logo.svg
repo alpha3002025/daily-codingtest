@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="url(#gemini-gradient)">
+  <defs>
+    <linearGradient id="gemini-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4E81EE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9C55F5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <path d="M10.5 3.5C10.5 3.5 10.5 9.5 16.5 9.5C16.5 9.5 22.5 9.5 22.5 11.5C22.5 13.5 16.5 13.5 16.5 13.5C16.5 13.5 10.5 13.5 10.5 19.5C10.5 19.5 10.5 13.5 4.5 13.5C4.5 13.5 -1.5 13.5 -1.5 11.5C-1.5 9.5 4.5 9.5 4.5 9.5C4.5 9.5 10.5 9.5 10.5 3.5Z" transform="translate(1, 0.5)" />
+</svg>
