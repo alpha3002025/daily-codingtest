@@ -2,6 +2,7 @@ def solution(sequence, k):
     n,left,right = len(sequence),0,0
     current_sum = sequence[0]
     
+    ## [start 위치,  end 위치,  현재시점의 부분수열의 길이] 를 기억
     best_range = [0, 0, float('inf')] ## [start,end,length]
     
     while right < n:
@@ -22,3 +23,8 @@ def solution(sequence, k):
             left+=1
     
     return [best_range[0], best_range[1]]
+
+
+print(solution([1, 2, 3, 4, 5], 7))
+print(solution([1, 1, 1, 2, 3, 4, 5], 5))
+print(solution([2, 2, 2, 2, 2], 6))

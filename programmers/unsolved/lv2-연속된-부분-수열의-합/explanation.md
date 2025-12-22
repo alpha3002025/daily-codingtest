@@ -55,3 +55,51 @@ def solution(sequence, k):
             
     return [best_range[0], best_range[1]]
 ```
+<br/>
+<br/>
+
+
+## 코드 설명
+
+Q. `if (right - left + 1) < best_range[2]:` 이 부분은 어떤 의미인가요?
+
+A. **더 짧은 부분 수열을 발견했을 때만 정답을 갱신**하는 로직입니다.
+
+- `(right - left + 1)`: 현재 발견한 `합이 k인 부분 수열`의 길이입니다.
+- `best_range[2]`: 지금까지 발견한 정답 후보들 중 **가장 짧은 길이**를 저장하고 있습니다.
+- 조건식의 의미:
+  - 현재 구간의 길이가 기존 최소 길이보다 **더 짧을 때만** `best_range`를 업데이트합니다.
+  - 만약 길이가 같다면? 문제 조건인 "길이가 같다면 시작 인덱스가 작은 것을 우선한다"를 만족하기 위해 **갱신하지 않습니다.** (탐색 순서상 먼저 발견된 것이 인덱스가 더 작기 때문입니다.)
+
+
+# 문제 풀이 기록
+## 2025/12/22
+```python
+def solution(sequence, k):
+    curr_range = [0, 0, float('inf')] ## [start, end, 현재 부분수열 길이 k]
+    left, right = 0, 0
+    curr_sum = sequence[0]
+    
+    while right < len(sequence): ## right 가 len 에 도달하지 않을 동안에만
+        if curr_sum < k:
+            ## right 를 오른쪽으로 이동 (수열 길이를 늘려본다.)
+            right += 1
+            if right < len(sequence):
+                curr_sum += sequence[right]
+        elif curr_sum > k:
+            ## left 를 오른쪽으로 이동 (수열 길이를 줄여본다.)
+            curr_sum -= sequence[left]
+            left += 1
+        else: ## curr_sum == k 
+            curr_len = right - left + 1
+            if curr_len < curr_range[2]:
+                curr_range[2] = curr_len
+                curr_range[0] = left
+                curr_range[1] = right
+            
+            ## left 를 오른쪽으로 이동해본다. (수열 길이를 줄여본다.)
+            curr_sum -= sequence[left]
+            left += 1
+    
+    return [curr_range[0], curr_range[1]]
+```
