@@ -67,11 +67,6 @@ def solution(expression):
     tokens = re.split(r'([^0-9])', expression)
     # -> ['100', '-', '200', '*', '300']
     
-    # 숫자형 변환
-    base_expression =Array = []
-    # 숫자와 연산자를 분리해서 저장하는 것이 좋음.
-    # 하지만 위 tokens 그대로 써도 무방.
-    
     operands = list(map(int, tokens[0::2])) # 짝수 인덱스는 숫자
     operators = tokens[1::2]                # 홀수 인덱스는 연산자
     
