@@ -54,8 +54,32 @@ print(s.startswith("world"))   # False
 print(s.startswith(("Hi", "He"))) # True (Hi 또는 He로 시작하는가?)
 ```
 
+# 다른 사람의 풀이
+## for - else
+기발하게 느껴졌다.
+```python
+def solution(skill, skill_trees):
+    answer = 0
 
-## 나의 풀이
+    for skills in skill_trees:
+        skill_list = list(skill)
+
+        for s in skills:
+            if s in skill:
+                if s != skill_list.pop(0):
+                    break
+        else:
+            answer += 1
+
+    return answer
+```
+
+`for-else` 는 break 등으로 끊기지 않고 끝까지 수행되면 else 문이 실행된다.<br/>
+<br/>
+
+
+
+# 문제 풀이 기록
 ### 2025/12/19 (1)
 ```python
 def solution(skill, skill_trees):
