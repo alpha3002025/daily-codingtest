@@ -60,8 +60,10 @@ print(math.gcd(0, 5))   # 5 (0과의 gcd는 0이 아닌 수 자기 자신)
   - Python 3.8 이하: 반복문 사용 (`g = gcd(g, next_val)` 형태) 또는 `functools.reduce(math.gcd, array)` 사용.
 
 
-## 나의 풀이
-### 2025/12/19 (1)
+# 문제 풀이 기록
+## 2025/12/22 
+
+## 2025/12/19 (1)
 ```python
 import math
 
