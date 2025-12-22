@@ -12,7 +12,35 @@
 - e.g. 좌: 4m, 우: 3m (270x4 = 360x3)
 
 <br/>
+
+물리 문제같지만 물리문제가 아니다. 단순하게 `a*x1 = b*x2` 인 케이스들을 찾는 문제다. 어렸을 때 과학시간에 배운 가속도,무게... 이런 개념 떠올리면 시험 망하는 문제. 문제에서 원하는 개념은 어떤 수 x1 에 a를 곱할때 다른 수 x2 에 다른 b를 곱해서 ax1 = bx2 가 되는 케이스를 찾는 문제다.<br/>
 <br/>
+
+시소는 2m, 3m, 4m 만 존재하므로 가능한 거리 비율은 (2, 2), (2, 3), (2, 4), (3, 2), (3, 4), (4, 2), (4, 3) 이다. `(3,3)`, `(4,4)`은 `(2,2)`와 비율이 동일하여 중복되므로 제외한다. 약분을 통해 비율을 정리해보면, (1,1), (2,3), (1,2), (3,4) 이렇게 4가지 케이스가 존재한다.<br/>
+<br/>
+
+경우의 수를 계산하는 방식은 다음과 같다.
+(1,1)
+- 각 weight 에 대해 v 명의 사람이 존재한다면, v 명중 2명을 뽑는 경우는 조합공식인 $_nC_2$ 를 계산하는 식인 (v-1) * v / 2 가 된다.
+
+<br/>
+
+(1,2)
+- `2 * x1 = 1 * x2` 인 방정식에서 `x1 = x2 // 2` 이다. 이 `x1` 이 존재하는지를 counter 에서 찾아서 x1 의 빈도수 x x2 의 빈도수로 경우의 수를 계산한다.
+- 또는 `x2 = x1 * 2` 의 식을 통해 x2 의 빈도수 x `x1` 의 빈도수 로 경우의 수를 구한다.
+
+<br/>
+
+(2,3) `answer += counter[w] * counter[w * 3 // 2]`
+- `x2 * 3 // 2 = x1` 을 통해 x1(=`x2 * 3 // 2`) 의 빈도수 x x2 의 빈도수로 경우의 수를 계산한다. 
+
+<br/>
+
+(3,4) `answer += counter[w] * counter[w * 4 // 3]`
+- `x2 * 4 // 3 = x1` 을 통해 x1(=`x2 * 4 // 3`) 의 빈도수 x x2 의 빈도수로 경우의 수를 계산한다. 
+
+<br/>
+
 
 ## 문제 설명
 시소는 중심으로부터 2m, 3m, 4m 거리에 좌석이 있습니다.
@@ -106,3 +134,77 @@ def solution(weights):
 - 몸무게가 `w`인 사람이 A명, `target`인 사람이 B명 있다면, 이 둘 사이의 짝꿍 조합 수는 $A \times B$입니다. (곱의 법칙)
 
 
+### 라인 별 코드 설명
+
+**(1) 같은 몸무게끼리 (1:1 비율)**
+```python
+# 1. 같은 몸무게끼리 (1:1 비율)
+for k, v in counter.items():
+    if v > 1:
+        answer += v * (v - 1) // 2
+```
+- **조합 공식($_nC_2$)**: `v`명의 몸무게가 모두 같다면, 어느 위치(2m, 3m, 4m)에 앉든 서로 같은 거리에 앉으면 균형을 이룹니다.
+- 따라서 `v`명 중 2명을 뽑는 경우의 수인 `v * (v-1) / 2`를 더해줍니다.
+
+
+
+**(2) 비율 2:3 (w * 3 = target * 2)**
+```python
+# 비율 2:3 (w가 2/3 지점에, 상대가 1 지점에? 아님. w*3 = target*2)
+# target = w * 3 / 2
+if w % 2 == 0 and (w * 3 // 2) in counter:
+    answer += counter[w] * counter[w * 3 // 2]
+```
+- 현재 몸무게 `w`보다 **더 무거운** 짝꿍 `target`을 찾습니다. (`w < target`)
+- `w`가 3m 지점, `target`이 2m 지점에 앉는 경우입니다. ($w \times 3 = target \times 2$)
+- `target`이 정수여야 하므로 `w`는 2의 배수여야 합니다. (`w % 2 == 0`)
+- 조건을 만족하는 `target`이 존재하면, `(w 인원수) * (target 인원수)` 만큼의 쌍을 추가합니다.
+
+
+
+**(3) 비율 1:2 (w * 2 = target * 1)**
+```python
+# 비율 2:4 (= 1:2)
+# w * 2 = target * 1 -> target = w * 2
+if (w * 2) in counter:
+    answer += counter[w] * counter[w * 2]
+```
+- `w`가 4m 지점, `target`이 2m 지점에 앉는 경우입니다. ($w \times 4 = target \times 2 \rightarrow w \times 2 = target$)
+- `w`의 2배가 되는 몸무게가 있는지 확인합니다.
+
+
+
+**(4) 비율 3:4 (w * 4 = target * 3)**
+```python
+# 비율 3:4
+# w * 4 = target * 3 -> target = w * 4 / 3
+if w % 3 == 0 and (w * 4 // 3) in counter:
+    answer += counter[w] * counter[w * 4 // 3]
+```
+- `w`가 4m 지점, `target`이 3m 지점에 앉는 경우입니다. ($w \times 4 = target \times 3$)
+- `target`이 정수여야 하므로 `w`는 3의 배수여야 합니다. (`w % 3 == 0`)
+
+
+
+**(5) 1:3 비율은 왜 구하지 않나요?**
+-   시소 좌석은 **2m, 3m, 4m**만 존재합니다.
+-   1:3 비율이 성립하려면 `(1m, 3m)`, `(2m, 6m)`, `(4m, 12m)` 등의 조합이 필요한데, 시소에 **1m, 6m, 12m** 좌석이 존재하지 않으므로 이 경우는 계산할 필요가 없습니다.
+
+
+## 다른 풀이 (1)
+다음과 같은 풀이 역시 가능하다.
+```python
+from itertools import combinations
+from collections import Counter
+
+def solution(weights):
+    cnt = 0
+    weights = Counter(weights)
+    for a, b in combinations(weights.keys(), 2): # 서로 다른 무게
+        if a*2 == b*3 or a*2 == b*4 or a*3 == b*4 or b*2 == a*3 or b*2 == a*4 or b*3 == a*4:
+            cnt += weights[a] * weights[b]
+    for v in weights.values(): # 같은 무게
+        if v > 1:
+            cnt += sum([i for i in range(1, v)])
+    return cnt
+```
