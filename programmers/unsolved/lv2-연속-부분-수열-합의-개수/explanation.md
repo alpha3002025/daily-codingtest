@@ -34,3 +34,17 @@ def solution(elements):
             
     return len(sums)
 ```
+
+## 풀이 2. 약간 Bruteforce
+```python
+def solution(elements):
+    duplicated = elements + elements
+    occurence = set()
+    
+    for i in range(len(elements)):
+        for sub_length in range(len(elements)):
+            curr_sum = sum(duplicated[i:i+sub_length+1])
+            occurence.add(curr_sum)
+    
+    return len(occurence)
+```
