@@ -80,7 +80,21 @@ def solution(skill, skill_trees):
 
 
 # 문제 풀이 기록
-### 2025/12/19 (1)
+## 2025/12/22 (2)
+```python
+def solution(skill, skill_trees):
+    answer = 0
+    
+    for curr_skill in skill_trees:
+        filtered = "".join([c for c in curr_skill if c in skill])
+        # print(f"filtered = {filtered}, skill = {skill}")
+        # if filtered in skill: ## 가능할 것으로 보이지만 네번째 입출력 예를 보면 불가능
+        if skill.startswith(filtered):
+            answer += 1
+    return answer
+```
+
+## 2025/12/19 (1)
 ```python
 def solution(skill, skill_trees):
     count = 0
