@@ -1,5 +1,32 @@
 # 프로그래머스 - 서버 증설 횟수 (389479)
 
+
+## 개념 설명 코드
+```python
+def solution(players, m, k):
+    answer = 0
+    ## 0시 ~ 23시
+    server_status = [0] * 24
+    
+    for i in range(24):
+        ## 현재 접속 사용자 수에 대해 m명당 1개의 서버를 배치할때 필요한 서버의 수
+        required_cnt = players[i] // m
+        
+        ## 현재 서버의 수가 필요한 서버의 수(=required_cnt)를 넘어설 경우
+        if server_status[i] < required_cnt:
+            diff = required_cnt - server_status[i]
+            answer += diff
+            
+            ## k 시간 동안 증설한 서버의 수를 +
+            ## 범위 : i ~ i+k-1
+            for j in range(i, min(i+k, 24)):
+                server_status[j] += diff
+    
+    return answer
+```
+
+
+
 ## 1. 문제 분석
 - **목표**: 24시간 동안 사용자 수에 따라 서버를 증설해야 할 때, 총 증설된 서버의 횟수를 구해야 합니다.
 - **규칙**:
@@ -53,3 +80,5 @@ def solution(players, m, k):
   - 24시간을 순회하며 매번 최대 `k`시간만큼 값을 업데이트합니다. `T`와 `k`가 매우 작으므로 사실상 `O(1)`에 가깝습니다.
 - **공간 복잡도**: `O(T)`
   - 24시간의 상태를 저장하는 배열 하나만 사용합니다.
+
+
