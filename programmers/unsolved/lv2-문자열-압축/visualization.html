@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String Compression Visualization</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --primary: #58a6ff;
+            --secondary: #bc8cff;
+            --success: #238636;
+            --text: #c9d1d9;
+            --border: #30363d;
+            --highlight: rgba(88, 166, 255, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .control-panel {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.8rem;
+            border-radius: 6px;
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2ea043;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-control {
+            background: var(--primary);
+            color: #0d1117;
+        }
+
+        .viz-area {
+            position: relative;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 2rem;
+            min-height: 300px;
+        }
+
+        .code-view {
+            font-family: 'JetBrains Mono', monospace;
+            background: #0d1117;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            line-height: 1.6;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .code-line {
+            padding: 0 0.5rem;
+            border-radius: 4px;
+        }
+
+        .active-line {
+            background: rgba(188, 140, 255, 0.2);
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .status-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-label {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+        }
+
+        .status-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .string-viz {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 1rem;
+            background: #0d1117;
+            border-radius: 8px;
+            align-items: center;
+            min-height: 80px;
+        }
+
+        .char-block {
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .char-block.prev {
+            border-color: var(--primary);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .char-block.curr {
+            border-color: var(--secondary);
+            background: rgba(188, 140, 255, 0.1);
+        }
+
+        .char-block.match {
+            background: rgba(35, 134, 54, 0.3);
+            border-color: var(--success);
+        }
+
+        .result-box {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--success);
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>String Compression Algo Viz</h1>
+
+        <div class="control-panel">
+            <div class="input-group">
+                <input type="text" id="inputStr" value="aabbaccc" placeholder="Enter string...">
+                <button class="btn-primary" onclick="startSim()">Start Simulation</button>
+            </div>
+            <div class="input-group" style="justify-content: center;">
+                <button class="btn-control" id="prevBtn" onclick="prevStep()" disabled>Prev</button>
+                <button class="btn-control" id="nextBtn" onclick="nextStep()" disabled>Next</button>
+                <button class="btn-control" id="playBtn" onclick="togglePlay()" disabled>Play</button>
+            </div>
+        </div>
+
+        <div class="viz-area">
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-label">Unit Size</span>
+                    <span class="status-value" id="dispUnit">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Current Index (i)</span>
+                    <span class="status-value" id="dispIdx">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Pattern Count</span>
+                    <span class="status-value" id="dispCount">-</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Compressed Len</span>
+                    <span class="status-value" id="dispLen">-</span>
+                </div>
+            </div>
+
+            <div class="string-viz" id="visualBlocks"></div>
+            <div class="result-box" id="dispResult"></div>
+
+            <div class="code-view" id="codeView">
+                <div class="code-line" id="line-1">def solution(s):</div>
+                <div class="code-line" id="line-2"> n = len(s)</div>
+                <div class="code-line" id="line-3"> for unit in range(1, n // 2 + 1):</div>
+                <div class="code-line" id="line-4"> compressed = ""; prev = s[:unit]; count = 1</div>
+                <div class="code-line" id="line-5"> for i in range(unit, n, unit):</div>
+                <div class="code-line" id="line-6"> curr = s[i:i+unit]</div>
+                <div class="code-line" id="line-7"> if prev == curr: count += 1</div>
+                <div class="code-line" id="line-8"> else:</div>
+                <div class="code-line" id="line-9"> compressed += (str(count) + prev) if count > 1 else prev</div>
+                <div class="code-line" id="line-10"> prev = curr; count = 1</div>
+                <div class="code-line" id="line-11"> compressed += (str(count) + prev) if count > 1 else prev</div>
+                <div class="code-line" id="line-12"> min_length = min(min_length, len(compressed))</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let steps = [];
+        let currentStep = -1;
+        let timer = null;
+        let s = "";
+
+        function generateSteps(str) {
+            let trace = [];
+            let n = str.length;
+            if (n === 1) return [{ type: 'init', unit: '-', i: '-', count: '-', res: '-', hl: 2 }];
+
+            for (let unit = 1; unit <= Math.floor(n / 2); unit++) {
+                trace.push({ type: 'new_unit', unit: unit, i: '-', count: '-', res: "", hl: 3 });
+
+                let compressed = "";
+                let prev = str.substring(0, unit);
+                let count = 1;
+
+                trace.push({ type: 'init_vars', unit: unit, i: unit, count: 1, prev: prev, res: compressed, hl: 4 });
+
+                for (let i = unit; i < n; i += unit) {
+                    let curr = str.substring(i, i + unit);
+                    trace.push({ type: 'loop_start', unit: unit, i: i, count: count, prev: prev, curr: curr, res: compressed, hl: 5 });
+
+                    if (prev === curr) {
+                        count++;
+                        trace.push({ type: 'match', unit: unit, i: i, count: count, prev: prev, curr: curr, res: compressed, hl: 7 });
+                    } else {
+                        trace.push({ type: 'mismatch', unit: unit, i: i, count: count, prev: prev, curr: curr, res: compressed, hl: 8 });
+                        if (count > 1) compressed += String(count) + prev;
+                        else compressed += prev;
+
+                        trace.push({ type: 'update_res', unit: unit, i: i, count: count, prev: prev, curr: curr, res: compressed, hl: 9 });
+
+                        prev = curr;
+                        count = 1;
+                        trace.push({ type: 'reset_vars', unit: unit, i: i, count: count, prev: prev, curr: curr, res: compressed, hl: 10 });
+                    }
+                }
+
+                trace.push({ type: 'loop_end', unit: unit, i: 'End', count: count, prev: prev, res: compressed, hl: 11 });
+
+                if (count > 1) compressed += String(count) + prev;
+                else compressed += prev;
+
+                trace.push({ type: 'final_append', unit: unit, i: 'End', count: count, prev: prev, res: compressed, hl: 11 });
+            }
+            return trace;
+        }
+
+        function startSim() {
+            s = document.getElementById('inputStr').value;
+            if (!s) return;
+
+            steps = generateSteps(s);
+            currentStep = -1;
+
+            document.getElementById('prevBtn').disabled = false;
+            document.getElementById('nextBtn').disabled = false;
+            document.getElementById('playBtn').disabled = false;
+
+            nextStep();
+        }
+
+        function updateUI(step) {
+            // Update Status
+            document.getElementById('dispUnit').innerText = step.unit;
+            document.getElementById('dispIdx').innerText = step.i;
+            document.getElementById('dispCount').innerText = step.count;
+            document.getElementById('dispLen').innerText = step.res.length;
+            document.getElementById('dispResult').innerText = step.res;
+
+            // Highlight Code
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            if (step.hl) document.getElementById('line-' + step.hl).classList.add('active-line');
+
+            // Block Viz
+            const viz = document.getElementById('visualBlocks');
+            viz.innerHTML = '';
+
+            if (step.unit === '-') return; // Init state
+
+            let ptr = 0;
+            let unit = step.unit;
+
+            // Simply render blocks based on string index logic
+            // We highlight prev and curr based on step info
+
+            // This is a simplified visual rep:
+            // We just show 'prev' block and 'curr' block context visually
+
+            // Render processed part
+            // Render Prev (Active)
+            // Render Curr (Active)
+            // Render Remaining
+
+            // Just show prev and curr as blocks on a "tape"
+
+            // Let's draw the full string as blocks of size 'unit'
+            // But the last block might be smaller
+            for (let k = 0; k < s.length; k += unit) {
+                let chunk = s.substring(k, k + unit);
+                let div = document.createElement('div');
+                div.className = 'char-block';
+                div.innerText = chunk;
+
+                // Highlight Logic
+                // If this chunk is 'prev'
+                // We need to know the index of 'prev'. 
+                // The step object doesn't carry precise index of prev except implicitly.
+                // Let's assume linear scan:
+                // i is current index. prev is at i - unit usually? Or accumulated?
+                // Actually 'i' in loop is start of 'curr'. 
+                // So 'prev' is at 'i - unit' IF we are in the middle of loop.
+                // This is tricky to map perfectly without carrying index state.
+
+                // Simpler: Just rely on string matching if unique? No, unstable.
+
+                // Let's use 'i' from step.
+                // If i is a number:
+                // Curr starts at i.
+                // Prev starts at i - unit * count? No, prev is just the pattern currently held.
+                // Wait, prev is just "the string".
+                // The current SCAN is at 'i'.
+                // So block at k==i is CURR.
+
+                if (k === step.i) {
+                    div.classList.add('curr');
+                }
+                // Prev is tricky cause it might be conceptually 'floating' but physically it was the block before.
+                // Actually, prev is usually the block at i-unit during the scan, initially.
+                // But after match, we extend count, so 'prev' stays conceptually same, but we move 'i'.
+
+                // Let's just highlight 'i' (Curr)
+
+                viz.appendChild(div);
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateUI(steps[currentStep]);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateUI(steps[currentStep]);
+            }
+        }
+
+        function togglePlay() {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+                document.getElementById('playBtn').innerText = "Play";
+            } else {
+                timer = setInterval(() => {
+                    if (currentStep < steps.length - 1) nextStep();
+                    else togglePlay();
+                }, 800);
+                document.getElementById('playBtn').innerText = "Pause";
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
