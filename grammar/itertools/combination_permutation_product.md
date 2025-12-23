@@ -1,5 +1,20 @@
 # itertools 모듈의 주요 함수
 
+combination
+- 순서고려 x 이면서, 같은 요소를 중복해서 선택x
+- 종류를 골라내는 역할
+
+
+permutation
+- 순서고려 o 이면서, 같은 요소를 중복해서 선택x
+- 순서를 정하는 역할
+
+
+product
+- 순서고려 x 이면서, 같은 요소를 중복해서 선택o
+
+
+
 1.  **`combinations(iterable, r)`**: 조합
     -   순서 고려 X (`AB` == `BA`)
     -   중복 허용 X
@@ -40,7 +55,7 @@ for p in permutations(str, 2):
 <br/>
 
 3.  **`product(iterable, repeat=r)`**: 중복 순열 (데카르트 곱)
-    -   순서 고려 O, 같은 원소 중복 선택 O (`AA`, `AB`...)
+    -   순서 고려 X, 같은 원소 중복 선택 O (`AA`, `AB`...)
     -   `repeat`로 몇 번 뽑을지 지정
 
 ```python
