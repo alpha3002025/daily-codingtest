@@ -52,6 +52,9 @@ def solution(n, k, enemy):
                 k -= 1
             else:
                 # 무적권도 없고 병사도 부족하면 종료
+                # i번째 라운드에서 막지 못했으므로, 
+                # 성공한 라운드는 0 ~ i-1 까지 총 i개 입니다.
+                # (예: index 3에서 실패 -> 0,1,2 성공 -> 정답 3)
                 return i
                 
     return len(enemy)
