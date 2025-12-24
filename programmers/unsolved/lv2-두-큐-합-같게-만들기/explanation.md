@@ -1,5 +1,49 @@
 # 두 큐 합 같게 만들기
 
+## 개념 설명 코드
+```python
+from collections import deque
+
+def solution(queue1, queue2):
+    q1 = deque(queue1)
+    q2 = deque(queue2)
+    
+    s1 = sum(q1)
+    s2 = sum(q2)
+    total = s1 + s2
+    
+    if total % 2 != 0:
+        return -1
+        
+    target = total // 2
+    limit = len(q1) * 3 # 넉넉한 반복 제한 (원상복구 고려)
+    count = 0
+    
+    while count <= limit:
+        if s1 == target:
+            # s1이 목표값(전체의 절반)이 되면, 자동으로 s2도 목표값이 됨 (s1 + s2 = total)
+            # 따라서 두 큐의 합이 같아졌으므로 현재까지의 작업 횟수를 반환하고 종료
+            return count
+        
+        if s1 > target:
+            val = q1.popleft()
+            q2.append(val)
+            s1 -= val
+            s2 += val
+        else:
+            val = q2.popleft()
+            q1.append(val)
+            s1 += val
+            s2 -= val
+            
+        count += 1
+        
+    return -1
+```
+<br/>
+<br/>
+
+
 ## link
 - https://school.programmers.co.kr/learn/courses/30/lessons/118667
 
@@ -42,6 +86,8 @@ def solution(queue1, queue2):
     
     while count <= limit:
         if s1 == target:
+            # s1이 목표값(전체의 절반)이 되면, 자동으로 s2도 목표값이 됨 (s1 + s2 = total)
+            # 따라서 두 큐의 합이 같아졌으므로 현재까지의 작업 횟수를 반환하고 종료
             return count
         
         if s1 > target:
