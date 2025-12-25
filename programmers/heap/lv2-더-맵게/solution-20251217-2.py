@@ -25,3 +25,7 @@ def solution(scoville, K):
         mix_count += 1
         
     return mix_count
+
+
+
+
