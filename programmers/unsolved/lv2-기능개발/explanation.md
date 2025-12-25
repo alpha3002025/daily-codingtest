@@ -4,9 +4,7 @@
 - 예전에 작성했던 코드도 좋은 코드다. queue 를 사용했고, 시뮬레이션으로 작성했었다.
 - 다만 Gemini 의 코드가 조금 더 다른 곳에 응용가능성이 높고, 예전 풀이는 약간은 교과서처럼 개념을 완전하게 보여주는 풀이인 것 같다고 느꼈다.
 
-
 <br/>
-
 
 ## 문제 설명
 각 기능의 현재 진도율 `progresses`와 개발 속도 `speeds`가 주어집니다.
@@ -66,8 +64,43 @@ def solution(progresses, speeds):
     
     return answer
 ```
+<br/>
+<br/>
+
 
 ### 코드 설명
 - `zip`을 이용해 두 리스트를 묶어서 순회합니다.
 - `prev_max`는 현재 배포 그룹에서 가장 오래 걸리는 작업의 일수입니다. 이 값보다 작거나 같은 작업들은 모두 함께 배포됩니다.
 - 새로운 `prev_max`보다 큰 값이 나오면, 지금까지 모은 `count`를 `answer`에 넣고 초기화합니다.
+
+
+<br/>
+<br/>
+
+
+## 또 다른 Python 풀이 (시뮬레이션)
+```python
+from collections import deque
+
+def solution(progresses, speeds):
+    progresses = deque(progresses)
+    speeds = deque(speeds)
+    
+    answer = []
+    curr_time = 0
+    curr_task = 0
+    while progresses:
+        if progresses[0] + (curr_time * speeds[0]) >= 100:
+            progresses.popleft()
+            speeds.popleft()
+            curr_task += 1
+        else:
+            if curr_task != 0:
+                answer.append(curr_task)
+                curr_task = 0
+            curr_time += 1
+    
+    answer.append(curr_task)
+    
+    return answer
+```
