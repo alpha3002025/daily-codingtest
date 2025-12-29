@@ -54,3 +54,49 @@ def solution(s):
 - 닫는 괄호가 나왔을 때 `stack`이 비어있거나, `pop()`한 결과가 매핑된 짝이 아니면 `False`를 반환합니다.
 - `len(stack) == 0` 체크는 여는 괄호가 남아서 닫히지 않은 경우(예: `(()`)를 걸러내기 위함입니다.
 - 문자열의 길이 $N$이 최대 1,000이므로, $O(N^2)$ 복잡도(회전 $N$회 $\times$ 검사 $N$)로 충분히 통과 가능합니다 ($10^6$ 연산).
+
+
+## 문제 풀이 기록
+### 2025/12/29
+```python
+open_close = {
+    '(': ')',
+    '{': '}',
+    '[': ']'
+}
+
+def check_valid(s):
+    stack = []
+    
+    for c in s:
+        if c in ['(', '{', '[']:
+            stack.append(c)
+        else:
+            if not stack:
+                return False
+            
+            prev = stack.pop()
+            if open_close[prev] != c:
+                return False
+            
+    return len(stack) == 0
+
+
+def solution(s):
+    answer = 0
+    
+    n = len(s)
+    if n == 0:
+        return 0
+    
+    for i in range(n):
+        rotated = s[i:] + s[:i]
+        if check_valid(rotated):
+            answer += 1
+    
+    return answer
+```
+<br/>
+
+
+
