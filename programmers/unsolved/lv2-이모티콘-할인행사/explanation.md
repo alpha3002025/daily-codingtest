@@ -76,8 +76,77 @@ def solution(users, emoticons):
 - 총 복잡도: $O(4^m \times n \times m)$
 - $16384 \times 100 \times 7 \approx 10^7$ 연산으로 1초 이내 충분히 통과합니다.
 
+### 코드 상세 설명
 
-## 나의 풀이
+#### product 시 i 의 의미
+`product`와 루프 변수 `i`의 동작 원리는 다음과 같습니다.
+
+1.  **`product(discounts, repeat=len(emoticons))`의 역할**
+    - 가능한 **모든 할인율 조합(case)**을 생성합니다.
+    - 예: 이모티콘이 2개라면 `(10, 10)`, `(10, 20)`, ..., `(40, 40)`까지 총 $4^2=16$개의 튜플이 생성됩니다.
+    - 각 `case`는 **모든 이모티콘에 적용될 할인율의 한 세트**입니다.
+
+2.  **`for i in range(len(emoticons))`의 역할**
+    - 여기서 `i`는 이모티콘의 **순서(인덱스)**를 나타냅니다.
+    - `case`가 `(10, 20)`일 때:
+        - `i=0`: 첫 번째 이모티콘(`emoticons[0]`)에 첫 번째 할인율(`case[0]=10%`) 적용
+        - `i=1`: 두 번째 이모티콘(`emoticons[1]`)에 두 번째 할인율(`case[1]=20%`) 적용
+    - 즉, `i`는 `case`의 일부분을 자르는 것이 아니라, **현재 `case` 세트 내에서 몇 번째 이모티콘의 할인율을 가져올지 결정하는 인덱스**입니다.
+
+
+
+
+
+## 풀이기록 
+### 2025.12.31
+```python
+from itertools import product
+
+discounts = [10,20,30,40]
+
+def solution(users, emoticons):
+    
+    optimal_plus_user = 0
+    total_sales = 0
+    
+    for discount_combo in product(discounts, repeat = len(emoticons)):
+        ### 현재 할인율 조합 A 에 대해 
+        
+        subscription_cnt = 0
+        total_amount = 0
+        
+        for discount_limit, price_limit in users:
+            ### 사용자 각각에 대해 판매한 이모티콘 판매액을 계산한다.
+            
+            user_total_purchase = 0
+            for i in range(len(emoticons)):
+                emo_price = emoticons[i] ## 이모 싸게 해줘
+                discount_percent = discount_combo[i]
+                
+                if discount_percent >= discount_limit:
+                    ## 실수하지 말자. 
+                    #### emo_price * discount_percent // 100 은 할인액을 구하는거지 할인된 판매액이 아니다. 윽...
+                    user_total_purchase += emo_price * (100 - discount_percent) // 100
+            
+            if user_total_purchase >= price_limit:
+                subscription_cnt += 1
+            else:
+                total_amount += user_total_purchase
+                    
+            
+        ### 이 부분 주의
+        if subscription_cnt > optimal_plus_user:
+            optimal_plus_user = subscription_cnt
+            total_sales = total_amount
+        elif subscription_cnt == optimal_plus_user:
+            total_sales = max(total_sales, total_amount)
+    
+    return [optimal_plus_user, total_sales]
+```
+
+
+
+### (이거 혼동을 야기하는 풀이 방식이다. 너무 단축형으로 쓴다.) (언제풀었는지는 기억 안남)
 ```python
 from itertools import product
 
