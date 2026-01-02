@@ -1,4 +1,26 @@
 # 연속 부분 수열 합의 개수
+i = 0 일때 `curr_sum = 0` 으로 시작 (0에서 부터 모든 합을 구해가면서 가능한 모든 합의 집합을 구한다)
+- `sub_idx = 0` 일때 `curr_sum += e[i+sub_idx]` (`curr_sum += e[0 + 0]`)
+- `sub_idx = 1` 일때 `curr_sum += e[i+sub_idx]` (`curr_sum += e[0 + 1]`)
+- `sub_idx = 2` 일때 `curr_sum += e[i+sub_idx]` (`curr_sum += e[0 + 2]`)
+...
+- `sub_idx = n-1` 일때 `curr_sum += e[i+sub_idx]` (`curr_sum += e[0 + n-1]`)
+= `curr_sum = e[0] + e[1] + e[2] + ... + e[n-1]`
+= `curr_sum = e[i] + e[i+1] + e[i+2] + ... + e[i+n-1]`
+
+i = 1 일때 `curr_sum = 0` 으로 시작 (1에서 부터 모든 합을 구해가면서 가능한 모든 합의 집합을 구한다)
+- `sub_idx = 0` 일때 `curr_sum += e[i+sub_idx]` (`curr_sum += e[1 + 0]`)
+- `sub_idx = 1` 일때 `curr_sum += e[i+sub_idx]` (`curr_sum += e[1 + 1]`)
+- `sub_idx = 2` 일때 `curr_sum += e[i+sub_idx]` (`curr_sum += e[1 + 2]`)
+...
+- `sub_idx = n-1` 일때 `curr_sum += e[i+sub_idx]` (`curr_sum += e[1 + n-1]`)
+= `curr_sum = e[1] + e[2] + e[3] + ... + e[n]`
+= `curr_sum = e[i+1] + e[i+2] + e[i+3] + ... + e[i+n]`
+
+...
+
+
+
 
 ## 문제 설명
 원형 수열의 연속 부분 수열 합으로 만들 수 있는 수의 개수를 구합니다.
