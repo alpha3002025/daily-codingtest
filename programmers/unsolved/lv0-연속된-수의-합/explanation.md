@@ -135,9 +135,7 @@ start = (total - d_sum) // num
 
 
 
-## 방법 3. my code (sliding window)
-방법 2 를 이해하고 나니 방법 3는 조금은 브루트포스처럼 푸는 방식이구나 싶었다.<br/>
-
+## 방법 2. my code (sliding window)
 ```python
 def solution(num, total):
     biggest_n = total // num ### 가장큰수 x num 을 하는 케이스로 끝지점을 먼저 구한다.
@@ -165,3 +163,19 @@ def solution(num, total):
 
 ### 방법 2. sliding window
 window 를 옮겨가면서 합을 구한다.
+
+```python
+def solution(num, total):
+    maybe = total // num
+    
+    for i in range(num):
+        start = maybe - i
+        end = maybe - i + num
+        
+        curr = sum(range(start, end))
+        if curr == total:
+            return list(range(start,end))
+    
+    answer = []
+    return answer
+```
