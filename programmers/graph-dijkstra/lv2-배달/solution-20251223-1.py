@@ -23,7 +23,7 @@ def solution(N, road, K):
         
         for next_node, next_cost in graph[curr_dest]:
             another_route_cost = curr_cost + next_cost ## 1 -> curr_dest -> next_node
-            if another_route_cost < distance[next_node]:
+            if another_route_cost < distance[next_node]: ## 1 -> next_node 의 비용이 비효율적일때
                 distance[next_node] = another_route_cost
                 heappush(queue, (another_route_cost, next_node))
                 
