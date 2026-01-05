@@ -1,0 +1,5 @@
+gemini-프로그래머스-개념-풀이정리.txt
+https://school.programmers.co.kr/learn/courses/30/lessons/250134
+
+프로그래머스 "[PCCP 기출문제] 4번 / 수레 움직이기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @explanation.md 에 정리하세요.
+

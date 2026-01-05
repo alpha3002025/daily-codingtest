@@ -1,0 +1,18 @@
+프로그래머스-lv3-문제추출.txt
+
+https://school.programmers.co.kr/learn/challenges?order=recent&levels=3&languages=python3
+
+위 페이지의 `<a href="/learn/courses/30/lessons/389481">봉인된 주문</a>` 의 '봉인된 주문' 와 같은 문제 제목들에 대해 다음의 경로와 비어있는 exmplanation.md 파일을 생성하세요. 1페이지부터 5페이지까지 모든 문제에 대해 수행하세요. 문제 제목에 공백이 있을 경우 '-'으로 공백을 대체해서 디렉터리명을 생성하세요.
+
+programmers/unsolved/lv3-문제제목/explanation.md
+
+
+각각의 문제에 대해서는 다음과 같은 프롬프트를 만들어서 prompts/programmers-lv3.txt 에 추가하세요
+
+문제링크
+https://school.programmers.co.kr/learn/courses/30/lessons/389481 (위의 a 태그내의 문제링크의 앞에 'https://school.programmers.co.kr'를 붙임)
+
+프로그래머스 "문제제목" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv3-[공백을 '-'로 대체한 문제제목]/explanation.md 에 정리하세요.
+
+
+

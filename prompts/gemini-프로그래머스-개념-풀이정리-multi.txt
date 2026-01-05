@@ -1,0 +1,334 @@
+gemini-프로그래머스-개념-풀이정리-multi.txt
+
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/92341
+
+프로그래머스 "주차 요금 계산" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-주차-요금-계산/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/92335
+
+프로그래머스 "k진수에서 소수 개수 구하기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-k진수에서-소수-개수-구하기/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/87946
+
+프로그래머스 "피로도" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-피로도/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/87390
+
+프로그래머스 "n^2 배열 자르기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-n2-배열-자르기/explanation.md 에 정리하세요.
+
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/87377
+
+프로그래머스 "교점에 별 만들기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-교점에-별-만들기/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/86971
+
+프로그래머스 "전력망을 둘로 나누기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-전력망을-둘로-나누기/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/86052
+
+프로그래머스 "빛의 경로 사이클" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-빛의-경로-사이클/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/84512
+
+프로그래머스 "모음사전" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-모음사전/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/81302
+
+프로그래머스 "거리두기 확인하기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-거리두기-확인하기/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/77885
+
+프로그래머스 "2개 이하로 다른 비트" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-2개-이하로-다른-비트/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/77485
+
+프로그래머스 "행렬 테두리 회전하기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-행렬-테두리-회전하기/explanation.md 에 정리하세요.
+
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/76502
+
+프로그래머스 "괄호 회전하기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-괄호-회전하기/explanation.md 에 정리하세요.
+
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/72412
+
+프로그래머스 "순위 검색" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-순위-검색/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/72411
+
+프로그래머스 "메뉴 리뉴얼" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-메뉴-리뉴얼/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/70129
+
+프로그래머스 "이진 변환 반복하기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-이진-변환-반복하기/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/68936
+
+프로그래머스 "쿼드압축 후 개수 세기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-쿼드압축-후-개수-세기/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/68645
+
+프로그래머스 "삼각 달팽이" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-삼각-달팽이/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/67257
+
+프로그래머스 "수식 최대화" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-수식-최대화/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/64065
+
+프로그래머스 "튜플" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-튜플/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/62048
+
+프로그래머스 "멀쩡한 사각형" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-멀쩡한-사각형/explanation.md 에 정리하세요.
+
+
+
+---
+
+https://school.programmers.co.kr/learn/courses/30/lessons/60058
+
+프로그래머스 "괄호 변환" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-괄호-변환/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/60057
+
+프로그래머스 "문자열 압축" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-문자열-압축/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/49994
+
+프로그래머스 "방문 길이" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-방문-길이/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/49993
+
+프로그래머스 "스킬트리" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-스킬트리/explanation.md 에 정리하세요.
+
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/43165
+
+프로그래머스 "타겟 넘버" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-타겟-넘버/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42890
+
+프로그래머스 "후보키" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-후보키/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42888
+
+프로그래머스 "오픈채팅방" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-오픈채팅방/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42885
+
+프로그래머스 "구명보트" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-구명보트/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42883
+
+프로그래머스 "큰 수 만들기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-큰-수-만들기/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42860
+
+프로그래머스 "조이스틱" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-조이스틱/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42842
+
+프로그래머스 "카펫" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-카펫/explanation.md 에 정리하세요.
+
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42839
+
+프로그래머스 "소수 찾기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-소수-찾기/explanation.md 에 정리하세요.
+
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42747
+
+프로그래머스 "H-Index" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-H-Index/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42746
+
+프로그래머스 "가장 큰 수" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-가장-큰-수/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42626
+
+프로그래머스 "더 맵게" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-더-맵게/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42587
+
+프로그래머스 "프로세스" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-프로세스/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42586
+
+프로그래머스 "기능개발" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-기능개발/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42584
+
+프로그래머스 "주식가격" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-주식가격/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42583
+
+프로그래머스 "다리를 지나는 트럭" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-다리를-지나는-트럭/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42578
+
+프로그래머스 "의상" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-의상/explanation.md 에 정리하세요.
+
+
+
+---
+
+https://school.programmers.co.kr/learn/courses/30/lessons/42577
+
+프로그래머스 "전화번호 목록" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-전화번호-목록/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/17687
+
+프로그래머스 "[3차] n진수 게임" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-[3차]-n진수-게임/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/17686
+
+프로그래머스 "[3차] 파일명 정렬" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-[3차]-파일명-정렬/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/17684
+
+프로그래머스 "[3차] 압축" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-[3차]-압축/explanation.md 에 정리하세요.
+
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/17683
+
+프로그래머스 "[3차] 방금그곡" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-[3차]-방금그곡/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/17680
+
+프로그래머스 "[1차] 캐시" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-[1차]-캐시/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/17679
+
+프로그래머스 "[1차] 프렌즈4블록" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-[1차] 프렌즈4블록/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/17677
+
+프로그래머스 "[1차] 뉴스 클러스터링" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-[1차]-뉴스-클러스터링/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/12985
+
+프로그래머스 "예상 대진표" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-예상-대진표/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/12981
+
+프로그래머스 "영어 끝말잇기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-영어-끝말잇기/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/12980
+
+프로그래머스 "점프와 순간 이동" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-점프와-순간-이동/explanation.md 에 정리하세요.
+
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/12978
+
+프로그래머스 "배달" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-배달/explanation.md 에 정리하세요.
+
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/12973
+
+프로그래머스 "짝지어 제거하기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-짝지어-제거하기/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/12953
+
+프로그래머스 "N개의 최소공배수" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-N개의-최소공배수/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/12952
+
+프로그래머스 "N-Queen" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-N-Queen/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/12951
+
+프로그래머스 "JadenCase 문자열 만들기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-JadenCase-문자열-만들기/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/12949
+
+프로그래머스 "행렬의 곱셈" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-행렬의-곱셈/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/12946
+
+프로그래머스 "하노이의 탑" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-하노이의-탑/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/12945
+
+프로그래머스 "피보나치 수" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-피보나치-수/explanation.md 에 정리하세요.
+
+
+https://school.programmers.co.kr/learn/courses/30/lessons/12941
+
+프로그래머스 "최솟값 만들기" 의 python 풀이를 추천하세요. 문제에서 원하는 개념 등에 대해서도 설명하세요. @programmers/unsolved/lv2-최솟값-만들기/explanation.md 에 정리하세요.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
