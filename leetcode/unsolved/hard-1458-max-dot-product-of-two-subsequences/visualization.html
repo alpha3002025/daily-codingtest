@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Max Dot Product Visualization</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --text-color: #e2e8f0;
+            --accent-color: #38bdf8;
+            --highlight-curr: #f472b6;
+            /* Pink */
+            --highlight-diag: #a78bfa;
+            /* Purple */
+            --highlight-top: #34d399;
+            /* Green */
+            --highlight-left: #fbbf24;
+            /* Yellow */
+            --border-color: #334155;
+            --cell-size: 60px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            font-weight: 700;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .main-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: auto;
+        }
+
+        .controls-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            height: fit-content;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        input {
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #334155;
+            color: white;
+        }
+
+        button.primary {
+            background: var(--accent-color);
+            color: #0f172a;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            filter: brightness(1.1);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .grid-container {
+            display: grid;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 10px;
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1e293b;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            border: 1px solid transparent;
+            font-size: 0.9rem;
+        }
+
+        .cell.header {
+            background: #334155;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .cell.active {
+            border-color: var(--highlight-curr);
+            box-shadow: 0 0 15px rgba(244, 114, 182, 0.3);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .cell.highlight-diag {
+            border: 2px solid var(--highlight-diag);
+        }
+
+        .cell.highlight-top {
+            border: 2px solid var(--highlight-top);
+        }
+
+        .cell.highlight-left {
+            border: 2px solid var(--highlight-left);
+        }
+
+        .explanation-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .formula-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+
+        .val {
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .legend {
+            display: flex;
+            gap: 10px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 800px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Max Dot Product Visualization</h1>
+
+    <div class="container">
+
+        <div class="main-panel">
+            <div id="grid-wrapper" class="grid-container">
+                <!-- Grid will be generated here -->
+                <div style="color: #94a3b8;">Click "Start / Reset" to begin</div>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <div class="input-group">
+                <label>Nums1 (rows, comma separated)</label>
+                <input type="text" id="nums1-in" value="2, 1, -2, 5">
+            </div>
+            <div class="input-group">
+                <label>Nums2 (cols, comma separated)</label>
+                <input type="text" id="nums2-in" value="3, 0, -6">
+            </div>
+
+            <div class="btn-group">
+                <button id="start-btn" class="primary">Start / Reset</button>
+            </div>
+
+            <div class="btn-group">
+                <button id="prev-btn" disabled>Before</button>
+                <button id="next-btn" disabled>Next</button>
+            </div>
+
+            <div class="explanation-box" id="explanation">
+                Ready to start.
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--highlight-curr)"></div>Current
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--highlight-diag)"></div>Step 2 (Diag)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--highlight-top)"></div>Step 3 (Top)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--highlight-left)"></div>Step 4 (Left)
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const nums1In = document.getElementById('nums1-in');
+        const nums2In = document.getElementById('nums2-in');
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const gridWrapper = document.getElementById('grid-wrapper');
+        const explanation = document.getElementById('explanation');
+
+        let nums1 = [];
+        let nums2 = [];
+        let dpTable = [];
+        let step = 0;
+        let totalSteps = 0;
+        let n = 0;
+        let m = 0;
+
+        function init() {
+            try {
+                nums1 = nums1In.value.split(',').map(s => parseInt(s.trim()));
+                nums2 = nums2In.value.split(',').map(s => parseInt(s.trim()));
+                if (nums1.some(isNaN) || nums2.some(isNaN) || nums1.length === 0 || nums2.length === 0) throw new Error("Invalid Input");
+            } catch (e) {
+                alert("Please enter valid comma-separated numbers.");
+                return;
+            }
+
+            n = nums1.length;
+            m = nums2.length;
+
+            // DP Initialization and Calculation
+            dpTable = Array(n + 1).fill().map(() => Array(m + 1).fill(-Infinity));
+
+            for (let r = 1; r <= n; r++) {
+                for (let c = 1; c <= m; c++) {
+                    const curr_prod = nums1[r - 1] * nums2[c - 1];
+                    const prev_diag = dpTable[r - 1][c - 1];
+                    const prev_top = dpTable[r - 1][c];
+                    const prev_left = dpTable[r][c - 1];
+
+                    dpTable[r][c] = Math.max(
+                        curr_prod,
+                        (prev_diag === -Infinity ? -Infinity : prev_diag + curr_prod),
+                        prev_top,
+                        prev_left
+                    );
+                }
+            }
+
+            step = 0;
+            totalSteps = n * m;
+
+            renderGridStructure();
+
+            // Initial state
+            nextBtn.disabled = false;
+            prevBtn.disabled = true;
+            explanation.innerHTML = "Grid Initialized. Press Next to start filling.";
+        }
+
+        function renderGridStructure() {
+            gridWrapper.innerHTML = '';
+            // Grid columns: Label(idx) + Base(col 0) + m columns
+            // We use grid-template-columns
+            gridWrapper.style.gridTemplateColumns = `40px 50px repeat(${m}, var(--cell-size))`;
+
+            // --- Header Row ---
+            createCell('', 'transparent'); // Corner top-left
+            createCell('Base', 'header');  // Col 0 Header
+            nums2.forEach((val, idx) => {
+                const c = createCell(val, 'header');
+                c.innerHTML = `<div>${val}</div><div style='font-size:0.7em; opacity:0.7'>j=${idx + 1}</div>`;
+            });
+
+            // --- Rows ---
+            for (let i = 0; i <= n; i++) {
+                // Row Label
+                if (i === 0) {
+                    createCell('Base', 'header');
+                } else {
+                    const c = createCell(nums1[i - 1], 'header');
+                    c.innerHTML = `<div>${nums1[i - 1]}</div><div style='font-size:0.7em; opacity:0.7'>i=${i}</div>`;
+                }
+
+                // Cells
+                for (let j = 0; j <= m; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.id = `cell-${i}-${j}`;
+
+                    if (i === 0 || j === 0) {
+                        cell.style.background = '#1e2030'; // Slightly darker
+                        cell.style.color = '#64748b';
+                        cell.innerText = '-∞';
+                    } else {
+                        // Empty initially
+                        cell.innerText = '';
+                    }
+                    gridWrapper.appendChild(cell);
+                }
+            }
+        }
+
+        function createCell(text, type) {
+            const cell = document.createElement('div');
+            cell.className = `cell ${type === 'header' ? 'header' : ''}`;
+            if (type === 'transparent') cell.style.background = 'transparent';
+            cell.innerText = text;
+            gridWrapper.appendChild(cell);
+            return cell;
+        }
+
+        function updateStep(direction) {
+            if (direction === 'next' && step < totalSteps) step++;
+            if (direction === 'prev' && step > 0) step--;
+
+            if (step === 0) {
+                // Reset state visual
+                clearHighlights();
+                renderValuesUpTo(0);
+                explanation.innerHTML = "Start of simulation.";
+                prevBtn.disabled = true;
+                nextBtn.disabled = false;
+                return;
+            }
+
+            prevBtn.disabled = false;
+            nextBtn.disabled = (step === totalSteps);
+
+            // Calculate current cell i, j based on step (1-indexed sequence)
+            // Row major order: i=1, j=1..m, then i=2...
+            const i = Math.floor((step - 1) / m) + 1;
+            const j = ((step - 1) % m) + 1;
+
+            clearHighlights();
+            highlightCells(i, j);
+            renderValuesUpTo(step); // Show values for all completed steps and current one
+            showExplanation(i, j);
+
+            // Scroll into view if needed
+            const curr = document.getElementById(`cell-${i}-${j}`);
+            if (curr) curr.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+        }
+
+        function clearHighlights() {
+            document.querySelectorAll('.cell').forEach(c => {
+                c.classList.remove('active', 'highlight-diag', 'highlight-top', 'highlight-left');
+            });
+        }
+
+        function highlightCells(i, j) {
+            const curr = document.getElementById(`cell-${i}-${j}`);
+            const diag = document.getElementById(`cell-${i - 1}-${j - 1}`);
+            const top = document.getElementById(`cell-${i - 1}-${j}`);
+            const left = document.getElementById(`cell-${i}-${j - 1}`);
+
+            if (curr) curr.classList.add('active');
+            if (diag) diag.classList.add('highlight-diag');
+            if (top) top.classList.add('highlight-top');
+            if (left) left.classList.add('highlight-left');
+        }
+
+        function renderValuesUpTo(currentStep) {
+            // Need to efficiently fill text based on step count
+            // We can iterate 1 to currentStep
+            for (let s = 1; s <= totalSteps; s++) {
+                const r = Math.floor((s - 1) / m) + 1;
+                const c = ((s - 1) % m) + 1;
+                const cell = document.getElementById(`cell-${r}-${c}`);
+                if (!cell) continue;
+
+                if (s <= currentStep) {
+                    const val = dpTable[r][c];
+                    cell.innerText = val;
+                    cell.style.color = val < 0 ? '#f87171' : '#4ade80';
+                } else {
+                    cell.innerText = '';
+                }
+            }
+        }
+
+        function showExplanation(i, j) {
+            const curr_prod = nums1[i - 1] * nums2[j - 1];
+            const prev_diag = dpTable[i - 1][j - 1];
+            const diag_val = prev_diag === -Infinity ? -Infinity : prev_diag + curr_prod;
+            const prev_top = dpTable[i - 1][j];
+            const prev_left = dpTable[i][j - 1];
+            const result = dpTable[i][j];
+
+            explanation.innerHTML = `
+                <div style="margin-bottom: 8px; font-weight: bold; color: var(--accent-color)">
+                    Cell dp[${i}][${j}] Calculation
+                </div>
+                <div style="font-size: 0.85em; color: #94a3b8; margin-bottom: 8px;">
+                     nums1[${i - 1}] = ${nums1[i - 1]} <br/> nums2[${j - 1}] = ${nums2[j - 1]}
+                </div>
+                
+                <div class="formula-item" style="border-left: 3px solid var(--highlight-curr)">
+                    <span>1. New Start:</span>
+                    <span class="val">${nums1[i - 1]} * ${nums2[j - 1]} = ${curr_prod}</span>
+                </div>
+                <div class="formula-item" style="border-left: 3px solid var(--highlight-diag)">
+                    <span>2. Extend (Diag):</span>
+                    <span class="val">${fmt(prev_diag)} + ${curr_prod} = ${fmt(diag_val)}</span>
+                </div>
+                <div class="formula-item" style="border-left: 3px solid var(--highlight-top)">
+                    <span>3. Skip Top:</span>
+                    <span class="val">${fmt(prev_top)}</span>
+                </div>
+                <div class="formula-item" style="border-left: 3px solid var(--highlight-left)">
+                    <span>4. Skip Left:</span>
+                    <span class="val">${fmt(prev_left)}</span>
+                </div>
+                <div style="margin-top: 8px; border-top: 1px solid #334155; padding-top: 5px;">
+                    <strong>Max:</strong> <span style="font-size: 1.2rem; color: ${result < 0 ? '#f87171' : '#4ade80'}">${result}</span>
+                    <div style="font-size:0.8em; color:#94a3b8; margin-top:4px;">
+                        ${getReason(result, curr_prod, diag_val, prev_top, prev_left)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function fmt(val) {
+            return val === -Infinity ? '-∞' : val;
+        }
+
+        function getReason(res, v1, v2, v3, v4) {
+            if (res === v1 && res > v2 && res > v3 && res > v4) return "Prev history expected to degrade result (negative), so start fresh.";
+            if (res === v2) return "Extending previous best subsequence.";
+            if (res === v3) return "Better to skip nums1 element and keep previous state.";
+            if (res === v4) return "Better to skip nums2 element and keep previous state.";
+            return "Multiple paths yield same max value.";
+        }
+
+        startBtn.addEventListener('click', () => {
+            init();
+            updateStep('next');
+        });
+
+        nextBtn.addEventListener('click', () => updateStep('next'));
+        prevBtn.addEventListener('click', () => updateStep('prev'));
+
+        // Auto init
+        startBtn.click();
+
+    </script>
+</body>
+
+</html>
