@@ -16,6 +16,38 @@
 3.  **정렬 (Sorting)**:
     - 조합을 만들 때 메뉴 구성 "XY"와 "YX"는 같습니다. 따라서 **문자열을 정렬한 뒤 조합**을 만들어야 통일된 키를 얻을 수 있습니다 (예: 'A', 'C' -> "AC").
 
+
+## 개념설명 코드
+```python
+from itertools import combinations
+from collections import Counter
+
+def solution(orders, course):
+    answer = []
+    
+    for wanted_len in course:
+        candidates = []
+        
+        for order in orders:
+            sorted_order = sorted(order)
+            
+            for menu_comb in combinations(sorted_order, wanted_len):
+                candidates.append("".join(menu_comb))
+            
+        counter = Counter(candidates)
+        
+        if counter:
+            max_cnt = max(counter.values())
+            if max_cnt >= 2:
+                for menu_name, menu_cnt in counter.items():
+                    if menu_cnt == max_cnt:
+                        answer.append(menu_name)
+    
+    return sorted(answer)
+```
+
+
+
 ## Python 풀이
 
 ```python

@@ -5,6 +5,23 @@
 주어진 단어 `word`가 사전에서 몇 번째 단어인지 구해야 합니다.
 사전 순서는: A, AA, AAA, AAAA, AAAAA, AAAAE, ..., UUUUU 입니다.
 
+
+### 개념설명 코드
+```python
+from itertools import product
+
+def solution(word):
+    answer = 0
+    
+    dictionary = []
+    for window_size in range(1, 6):
+        for p in product(['A','E', 'I', 'O', 'U'], repeat=window_size):
+            dictionary.append("".join(p))
+    
+    dictionary.sort()
+    return dictionary.index(word)+1
+```
+
 ### 핵심 개념
 1.  **중복 순열 / 완전 탐색**: 단어의 최대 길이는 5이고, 문자는 5개입니다. 전체 단어의 개수는 $5^1 + 5^2 + 5^3 + 5^4 + 5^5 = 3905$개밖에 되지 않습니다. 따라서 모든 단어를 다 생성해서 정렬한 뒤 인덱스를 찾아도 됩니다.
 2.  **등비수열의 합 (수학적 접근)**: 각 자릿수가 바뀔 때마다 인덱스가 얼마나 증가하는지 규칙을 찾아서 계산할 수도 있습니다.
