@@ -9,6 +9,43 @@
 2.  **소수 판별 (Primality Test)**: 에라토스테네스의 체 또는 제곱근까지만 나누어보는 방식을 사용하여 소수인지 확인합니다.
 3.  **집합 (Set)**: "011"과 "11"은 같은 숫자 11입니다. 중복을 제거하기 위해 집합 자료구조를 사용합니다.
 
+
+## 개념 설명 코드
+```python
+from itertools import permutations
+from math import isqrt
+
+
+def is_prime(n):
+    if n < 2:
+        return False
+    
+    for i in range(2, isqrt(n)+1):
+        if n % i == 0:
+            return False
+    return True
+
+
+def solution(numbers):
+    answer = 0
+    number_list = list(numbers)
+    
+    prime_set = set()
+    ## 순열의 길이 순회
+    for curr_length in range(1, len(number_list)+1):
+        for curr_perm in permutations(number_list ,curr_length):
+            n = int("".join(curr_perm))
+            if is_prime(n):
+                prime_set.add(n)
+    
+    return len(prime_set)
+
+print(solution("17"))
+print(solution("011"))
+```
+<br/>
+
+
 ## Python 풀이
 
 ```python
