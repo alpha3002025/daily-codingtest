@@ -25,6 +25,51 @@
    - 총 구매 비용이 사용자의 한계 금액(`user[1]`) 이상이면 **가입**, 아니면 **구매**.
 3. **최댓값 갱신**: 가입자 수가 더 많거나, 가입자 수가 같으면서 매출액이 더 큰 경우 정답을 갱신합니다.
 
+
+## 개념 설명 코드
+```python
+from itertools import combinations
+from collections import defaultdict
+from bisect import bisect_left
+
+
+def solution(info, query):    
+    score_data = defaultdict(list)
+    
+    for data in info:
+        args = data.split()
+        score = int(args[-1])
+        conditions = args[:-1]
+        
+        for window_size in range(5):
+            for curr_comb in combinations(range(4), window_size): # ['cpp', 'java', 'python', '-']
+                condition_copy = conditions[:]
+                
+                for index in curr_comb:
+                    condition_copy[index] = '-'
+                
+                key = "".join(condition_copy)
+                score_data[key].append(score)
+    
+    
+    for key in score_data.keys():
+        score_data[key].sort()
+        
+    answer = []
+    
+    for condition in query:
+        args = condition.replace(" and ", "").split()
+        key = args[0]
+        score = int(args[1])
+        
+        scores = score_data[key]
+        pos = bisect_left(scores, score)
+        answer.append(len(scores) - pos)
+    
+    return answer
+```
+
+
 ## 코드 (Python)
 
 ```python
