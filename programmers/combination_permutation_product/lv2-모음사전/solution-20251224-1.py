@@ -16,3 +16,8 @@ def solution(word):
     
     answer = cnt+1
     return answer
+
+print(solution("AAAAE"))
+print(solution("AAAE"))
+print(solution("I"))
+print(solution("EIO"))
