@@ -112,3 +112,23 @@ for p in product(str, repeat=3):
 ('c', 'c', 'b')
 ('c', 'c', 'c')
 ```
+
+
+## permutation 예제 (2)
+```python
+print("permutation example (2) >>>>>>>")
+for curr_perm in permutations(["+", "-", "*"]):
+    print(curr_perm)
+
+"""
+('+', '-', '*')
+('+', '*', '-')
+('-', '+', '*')
+('-', '*', '+')
+('*', '+', '-')
+('*', '-', '+')
+"""
+```
+
+**참고:** `permutations` 함수의 두 번째 인자(r)를 생략하면 기본적으로 입력된 iterable의 길이(len)와 동일한 값을 사용합니다. 즉, 리스트의 모든 요소를 사용하여 만들 수 있는 모든 순서를 생성합니다.
+
