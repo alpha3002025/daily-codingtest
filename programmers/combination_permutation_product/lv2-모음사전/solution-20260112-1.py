@@ -1,0 +1,13 @@
+from itertools import product
+
+def solution(word):
+    answer = 0
+    
+    dictionary = []
+    word_set = set()
+    for window_size in range(1,6):
+        for p in product(['A', 'E', 'I', 'O', 'U'], repeat=window_size):
+            dictionary.append("".join(p))
+            
+    dictionary.sort()
+    return dictionary.index(word) + 1

@@ -13,6 +13,10 @@ for combination in comb:
 """
 print()
 
+print("참고 (combinations(str,0))")
+for combination in combinations(str, 0):
+    print(combination)
+
 
 print("permutations >>>>>>>")
 for p in permutations(str, 2):
