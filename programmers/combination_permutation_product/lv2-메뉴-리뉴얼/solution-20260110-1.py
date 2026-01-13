@@ -26,3 +26,7 @@ def solution(orders, course):
         ### 들여쓰기를 한단계 안쪽으로 했었다. combination 결과 카운팅이 order 별로 이뤄지도록 하고 있었다. 이렇게 하면 안되고 모든 order 에 대해 counting 을 한 결과를 wanted_len 에 대해서 산출해야 한다.
     
     return sorted(answer)
+
+print(solution(["ABCFG", "AC", "CDE", "ACDE", "BCFG", "ACDEH"], [2,3,4]))
+print(solution(["ABCDE", "AB", "CD", "ADE", "XYZ", "XYZ", "ACD"], [2,3,5]))
+print(solution(["XYZ", "XWY", "WXA"], [2,3,4]))

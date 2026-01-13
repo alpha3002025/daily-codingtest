@@ -30,3 +30,7 @@ def solution(expression):
                     operator_idx += 1
         max_value = max(max_value, abs(operands_copy[0]))
     return max_value
+
+
+print(solution("100-200*300-500+20"))
+print(solution("50*6-3*2"))
