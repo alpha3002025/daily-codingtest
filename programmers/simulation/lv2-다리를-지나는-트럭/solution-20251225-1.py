@@ -25,6 +25,7 @@ def solution(bridge_length, weight, truck_weights):
         #### 이미 truck 은 모두 썼지만, truck 들이 bridge 를 벗어나지 않은 경우
     return time
 
+
 print(solution(2, 10, [7,4,5,6]))
 print(solution(100, 100, [10]))
 print(solution(100, 100, [10,10,10,10,10,10,10,10,10,10]))

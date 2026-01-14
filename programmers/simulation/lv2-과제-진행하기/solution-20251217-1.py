@@ -34,8 +34,8 @@ def solution(plans):
                     ## 멈춘과제 일부 수행 후 다시 스텍에 push
                     stack.append((prev_name, prev_remain - remain_gap))
                     remain_gap = 0
-        else:
-            stack.append((name, playtime - time_gap))
+        else: ## 다음 작업 시각이 현재 작업이 끝나기 전에 시작할 경우 멈춰두고 stack 에 (작업명, 남은시각)을 넣어둔다.
+            stack.append((name, playtime - time_gap)) ## (현재작업명, 현재 작업의 남은 작업시간)을 stack 에 넣어둔다.
     
     ## 마지막 과제는 무조건 완료
     answer.append(parsed_plans[-1][0])
