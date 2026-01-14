@@ -11,6 +11,4 @@ def solution(elements):
     return len(sum_occurrence)
 
 
-print(solution([1, 2, 3, 4, 5], 7))
-print(solution([1, 1, 1, 2, 3, 4, 5], 5))
-print(solution([2, 2, 2, 2, 2], 6))
+print(solution([7,9,1,1,4]))

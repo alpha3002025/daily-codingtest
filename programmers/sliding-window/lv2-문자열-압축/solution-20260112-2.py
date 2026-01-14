@@ -31,3 +31,10 @@ def solution(s):
         min_length = min(min_length, len(compressed))
     
     return min_length
+
+
+print(solution("aabbaccc"))
+print(solution("ababcdcdababcdcd"))
+print(solution("abcabcdede"))
+print(solution("abcabcabcabcdededededede"))
+print(solution("xababcdcdababcdcd"))

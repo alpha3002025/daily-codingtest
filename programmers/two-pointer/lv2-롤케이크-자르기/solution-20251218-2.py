@@ -26,3 +26,7 @@ def solution(topping):
             kind += 1
     
     return kind
+
+
+print(solution([1, 2, 1, 3, 1, 4, 1, 2]))
+print(solution([1, 2, 3, 1, 4]))

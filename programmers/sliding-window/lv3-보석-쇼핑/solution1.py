@@ -5,7 +5,7 @@ def solution(gems):
     window_size = len(gems)
     
     ## [길이, 시작인덱스, 끝인덱스]
-    window = [window_size + 1, 0, 0]
+    window = [float('inf'), 0, 0]
     
     ## 현재 구간의 보석 개수 카운트 용도의 딕셔너리
     gem_dict = defaultdict(int)

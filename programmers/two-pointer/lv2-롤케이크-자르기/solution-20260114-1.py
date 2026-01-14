@@ -1,21 +1,21 @@
 from collections import Counter
 
 def solution(topping):
+    answer = 0
     left = set()
     right = Counter(topping)
     
-    cnt = 0
-    for current_topping in topping:
-        left.add(current_topping)
-        right[current_topping] -= 1
+    for item in topping:
+        left.add(item)
+        right[item] -= 1
         
-        if right[current_topping] == 0:
-            del right[current_topping]
+        if right[item] == 0:
+            del right[item]
         
         if len(left) == len(right):
-            cnt += 1
+            answer += 1
     
-    return cnt
+    return answer
 
 
 print(solution([1, 2, 1, 3, 1, 4, 1, 2]))

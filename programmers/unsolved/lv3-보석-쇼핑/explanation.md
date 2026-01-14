@@ -34,42 +34,72 @@
 from collections import defaultdict
 
 def solution(gems):
-    kinds = len(set(gems))
-    n = len(gems)
+    min_distance = float('inf')
+    start,end = 0,0
+    window = [start, end]
     
-    answer = [1, n] # 일단 전체 구간으로 초기화
-    min_len = n
-    
-    gem_dict = defaultdict(int)
-    
-    start = 0
-    end = 0
-    
-    # 슬라이딩 윈도우
-    # end가 n보다 작을 때까지, 혹은 start가 end보다 작거나 같을 때까지
+    occurrence = defaultdict(int)
+    kind = set(gems)
+    kind_cnt = len(kind)
     
     while True:
-        # 모든 종류가 다 모였으면 -> start를 줄여서 최소 찾기
-        if len(gem_dict) == kinds:
-            current_len = end - start
-            if current_len < min_len:
-                min_len = current_len
-                answer = [start + 1, end] # end는 이미 증가되어 있는 상태가 아니라, 현재 포함된 마지막 인덱스를 가리켜야 함?
-                                         # 로직을: gems[end] 추가 -> check -> start 이동 방식이면 end는 현재 마지막 위치
+        ### 조심!!) 탈출 조건문을 맨 앞에 두면, 보석이 들어있어서 윈도우를 줄일 여지가 있어도 break 할때가 있다.
+        # if end == len(gems):
+        #     break
+        
+        # elif len(occurrence) == kind_cnt:
+        if len(occurrence) == kind_cnt:
+            ## 원하는 종류수를 채웠으면? => 윈도우를 줄여본다.
+            # start += 1
             
-            # start 이동 (축소)
-            gem_dict[gems[start]] -= 1
-            if gem_dict[gems[start]] == 0:
-                del gem_dict[gems[start]]
+            if min_distance > end - start:
+                min_distance = end - start
+
+                window = [start+1, end]
+
+            occurrence[gems[start]] -= 1
+            if occurrence[gems[start]] == 0:
+                del occurrence[gems[start]]
+
             start += 1
             
-        elif end == n:
+        elif end == len(gems):
             break
-            
+        
         else:
-            # 아직 부족하면 -> end 늘리기
-            gem_dict[gems[end]] += 1
-            end += 1
+            ## 종류수를 아직 못채웠으면? => 새로운 item 을 탐색한다.
+            # end += 1
             
-    return answer
+            occurrence[gems[end]] += 1
+            end += 1
+    
+    return window
 ```
+
+
+
+## Q & A
+
+### Q1. `if end == len(gems): break` 구문을 `while` 문 맨 처음에 두었을 때 오답이 발생하는 이유와 예시는?
+
+두 코드는 `break` 문을 포함한 **조건문의 배치 순서** 때문에 하나는 정답이 되고, 다른 하나는 오답이 됩니다. 핵심은 **조건을 만족하는 경우(윈도우 축소)를 `end` 체크보다 상위에 두어야 한다**는 점입니다.
+
+#### 1. 에러 발생 원인
+`end`가 리스트의 끝(`len(gems)`)에 도달했더라도, 현재 윈도우(`start` ~ `end`) 안에 불필요한 보석이 포함되어 있을 수 있습니다. 이때 `break`를 먼저 해버리면, **마지막으로 윈도우를 축소하여 최솟값을 갱신할 기회를 잃어버리게 됩니다.**
+
+#### 2. 반례 예시
+`gems = ["A", "A", "B", "C"]` (종류: 3개) 일 때를 가정해 봅시다.
+
+**정상 로직 (축소 먼저 체크):**
+1. `end`가 4까지 이동하여 `['A', 'A', 'B', 'C']` (길이 4)를 모두 포함합니다.
+2. 루프 진입 시 `len(gem_dict) == 3` (조건 만족)을 먼저 체크합니다.
+3. `start`를 이동시켜 맨 앞의 `A`를 제거합니다. → `['A', 'B', 'C']` (길이 3)
+4. **최단 구간 길이 갱신 (4 → 3)** 성공.
+
+**오류 로직 (`end` 체크 먼저):**
+1. `end`가 4까지 이동하여 `['A', 'A', 'B', 'C']`를 포함합니다.
+2. 루프 진입 시 `if end == 4:`를 먼저 만나서 **즉시 종료(`break`)** 됩니다.
+3. 맨 앞의 `A`를 제거하는 축소 과정을 수행하지 못함.
+4. **최단 구간 길이는 여전히 4**로 남게 되어 **오답** 처리됩니다.
+
+따라서 종료 조건은 **"더 이상 확장할 수도 없고(끝 도달), 줄일 수도 없을 때(조건 불만족)"** 수행되어야 합니다.
