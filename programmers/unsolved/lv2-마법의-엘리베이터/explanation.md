@@ -21,6 +21,34 @@
 - https://school.programmers.co.kr/learn/courses/30/lessons/148653
 
 
+## 개념 설명 코드
+```python
+def solution(storey):
+    
+    answer = 0
+    while storey > 0:
+        lsb = storey % 10
+        
+        if lsb > 5:
+            storey += 10
+            answer += (10-lsb)
+            
+        elif lsb == 5:
+            next_lsb = (storey // 10) % 10
+            answer += 5
+            if next_lsb >= 5:
+                storey += 10
+            
+        else: ## lsb < 5
+            answer += lsb
+    
+        storey //= 10
+    return answer
+```
+
+<br/>
+
+
 ## 문제 설명
 마법의 엘리베이터가 있는 층 `storey`가 주어집니다.
 버튼은 10^c (c >= 0) 형태의 정수들이 적혀있으며, `+` 또는 `-` 버튼을 누르면 해당 값만큼 층이 이동합니다.
