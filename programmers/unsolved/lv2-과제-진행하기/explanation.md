@@ -19,6 +19,58 @@
      - `time_gap`만큼만 진행하고, 남은 시간(`playtime - time_gap`)을 갱신하여 스택에 `[name, remaining_time]` 형태로 저장합니다.
 4. 모든 과제 순회가 끝나면, 스택에 남아있는 과제들을 순서대로 꺼내 `answer`에 추가합니다 (LIFO).
 
+<br/>
+
+## 개념 설명 코드
+```python
+def to_minute(time):
+    h,m = map(int, time.split(":"))
+    return h*60 + m
+
+
+def solution(plans):
+    answer = []
+    tasks = []
+    
+    for name, start, playtime in plans:
+        tasks.append([name, to_minute(start), int(playtime)])
+    
+    tasks.sort(key = lambda x: x[1])
+    
+    stack = []
+    for i in range(len(tasks)-1):
+        curr_name, curr_start, curr_playtime = tasks[i]
+        next_start = tasks[i+1][1]
+        
+        curr_work_duration = next_start - curr_start
+        
+        if curr_playtime <= curr_work_duration: ## 다음 작업 시작 전에 현재 작업이 끝나면
+            answer.append(curr_name)
+            curr_free_time = curr_work_duration - curr_playtime
+            
+            while curr_free_time > 0 and stack:
+                stopped_name, stopped_free_time = stack.pop()
+                if stopped_free_time <= curr_free_time:
+                    answer.append(stopped_name)
+                    curr_free_time -= stopped_free_time
+                else:
+                    stack.append((stopped_name, stopped_free_time - curr_free_time))
+                    curr_free_time = 0
+        
+        else: ## 다음 작업 시작 전에 현재 작업이 끝나지 못하면, 현재 작업을 넣어두고, 남은 시간도 함께 기록 
+            stack.append((curr_name, curr_playtime - curr_work_duration))
+    
+    answer.append(tasks[-1][0])
+    
+    while stack:
+        answer.append(stack.pop()[0])
+    
+    return answer
+```
+
+<br/>
+<br/>
+
 ## 코드 (Python)
 
 ```python
@@ -82,7 +134,8 @@ def solution(plans):
 - 따라서, **진행한 시간(time_gap)만큼을 뺀 나머지 소요 시간**(`playtime - time_gap`)을 계산하여 스택에 보관(Push)해 둡니다. 이는 나중에 짬이 날 때 다시 꺼내서 이어서 진행하게 됩니다.
 
 
-**Q : 다음 작업이 있을 때 현재 작업이 진행 중이라면 멈춰두고 다음 작업을 수행한다는 의미인가요?**<br/>
+## Q&A
+### Q1. 다음 작업이 있을 때 현재 작업이 진행 중이라면 멈춰두고 다음 작업을 수행한다는 의미인가요?
 **A : 네, 맞습니다. 문제의 핵심 규칙 중 하나입니다.**<br/>
 - **"과제는 시작 시각이 되면 시작해야 한다"**는 규칙이 최우선입니다.
 - 만약 지금 하고 있는 과제 A가 아직 안 끝났는데, 다음 과제 B의 시작 시각이 되었다면?
@@ -91,4 +144,26 @@ def solution(plans):
   - 그리고 바로 과제 B를 시작합니다.
 - 멈춰둔 과제 A는 나중에 **"다음 과제 시작 전까지 시간이 붕 뜰 때(여유 시간이 생길 때)"** 다시 꺼내서 이어서 하게 됩니다.
 
+<br/>
 
+### Q2. `else: stack.append(...)` 부분이 실행되는 구체적인 상황은?
+
+**A : 현재 수행 중인 과제를 다 끝내지 못했는데, 다음 과제 시작 시간이 닥친 상황입니다.**
+
+구체적인 예시로 설명하면 다음과 같습니다:
+
+1.  **현재 상황**: 
+    -   지금 `12:00`부터 `korean` 과제를 하고 있습니다. (소요 시간 `30분` → 완료 예정 `12:30`)
+    -   그런데 다음 과제인 `english`가 `12:20`에 시작해야 합니다.
+2.  **충돌 발생**:
+    -   `korean`을 끝내려면 `12:30`까지 해야 하는데, `english` 때문에 `12:20`에는 무조건 멈춰야 합니다.
+    -   즉, `korean` 과제에 쓸 수 있는 시간(`time_gap`)은 `20분`뿐입니다.
+3.  **처리**:
+    -   `playtime(30분)` > `time_gap(20분)` 이므로 `else` 블록으로 진입합니다.
+    -   `korean` 과제를 20분만 수행하고 멈춥니다.
+    -   남은 시간은 `30 - 20 = 10분`입니다.
+    -   스택에 `('korean', 10)`을 저장해 두고, `12:20` 정각에 `english` 과제를 시작하러 떠납니다.
+
+**이때 `answer` (완료된 과제 리스트)의 변화:**
+-   `korean` 과제는 **아직 끝나지 않았으므로** `answer`에 추가되지 않습니다.
+-   나중에 `english` 등 뒤의 과제들을 다 끝내거나 짬이 생겼을 때, 다시 스택에서 `korean`을 꺼내 남은 `10분`을 수행하고, 그때 완료되면 비로소 `answer`에 추가됩니다.
