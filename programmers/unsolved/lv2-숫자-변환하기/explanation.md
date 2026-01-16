@@ -21,6 +21,7 @@
 
 ## bfs 코드 (Python)
 
+### 코드 1
 ```python
 from collections import deque
 
@@ -48,6 +49,37 @@ def solution(x, y, n):
                 
     return -1
 ```
+
+### 코드 2
+사실 이건 내가 예전에 풀었던 풀이 하하하... 코드 1과 return 하는 부분이 다른것을 볼수 있다.
+- 현재 노드에서의 경우인 curr 에서 return 하려면 그냥 curr_cost 를 return 하면 된다. (코드 2)
+- 다음 방문했을 때의 경우인 next 에서 return 하려면 curr_cost + 1 을 return 하면 된다. (코드 1)
+
+<br/>
+
+```python
+from collections import deque
+
+def solution(x, y, n):
+    visited = [False] * (y+1)
+    start = (x, 0)
+    queue = deque([start])
+    
+    
+    while queue:
+        curr_num, curr_cost = queue.popleft()
+        if curr_num == y: return curr_cost
+    
+        for next_num in [curr_num + n, curr_num * 2, curr_num * 3]:
+            if next_num > y: continue
+            if visited[next_num]: continue
+            
+            visited[next_num] = True
+            queue.append((next_num, curr_cost+1))
+    
+    return -1
+```
+
 
 ## dp코드 (Python)
 DP 배열(`dp[i]`: i를 만드는 최소 횟수)을 사용하여 **작은 숫자부터 y까지** 채워나가는 방식입니다. `x`에서 출발하여 `+n`, `*2`, `*3` 위치의 값을 갱신합니다.
@@ -104,13 +136,33 @@ if i * 3 <= y:
 <br/>
 
 
-**Q & A**<br/>
-
-**Q. `for i in range(x, y):`를 보면 `i`가 `y-1`까지만 순회하는데, 그래도 정답(`dp[y]`)을 구할 수 있나요?**
+### Q&A
+#### Q1. `for i in range(x, y):`를 보면 `i`가 `y-1`까지만 순회하는데, 그래도 정답(`dp[y]`)을 구할 수 있나요?**
 -   네, 가능합니다.
 -   DP의 핵심은 **"현재 값(`i`)에서 다음 값(`i+n` 등)을 갱신하는 것"**입니다.
 -   `dp[y]`는 `y`보다 작은 숫자들(`y-n`, `y/2` 등)에서의 연산 결과로 갱신됩니다. 따라서 `i`가 `y`에 도달하기 전인 `y-n`일 때 이미 `dp[y]` 갱신이 이루어질 수 있습니다.
 -   만약 `i=y`일 때까지 루프를 돌면 `dp[y]`에서 출발하여 `dp[y+n]` 등을 갱신하게 되는데, 이는 문제의 목표(`y`를 만드는 것)를 넘어서는 불필요한 계산입니다.
+
+<br/>
+
+#### Q2. `+n`, `*2`, `*3`을 선택하거나 선택하지 않는 경우는 각각 어디에 해당하나요?
+
+이 코드(Bottom-Up DP)는 **모든 선택지를 다 시도해보는 방식**입니다. 즉, "선택하거나 선택하지 않는다"가 아니라, **"3가지 연산을 각각 수행했을 때 도달하는 곳을 모두 갱신한다"**는 의미입니다.
+
+구체적으로:
+
+1.  **`dp[i] + 1`**: 현재 숫자 `i`까지 오는데 든 횟수(`dp[i]`)에 **이번 연산 1번을 추가**한다는 뜻입니다.
+2.  **`dp[i + n] = min(...)`**:
+    -   현재 숫자(`i`)에서 **`+ n` 연산을 선택**해서 `i + n`이라는 숫자로 가는 경우입니다.
+    -   기존에 `i + n`으로 가는 방법보다 더 빠르면 갱신합니다.
+3.  **`dp[i * 2] = min(...)`**:
+    -   현재 숫자(`i`)에서 **`* 2` 연산을 선택**해서 `i * 2`라는 숫자로 가는 경우입니다.
+4.  **`dp[i * 3] = min(...)`**:
+    -   현재 숫자(`i`)에서 **`* 3` 연산을 선택**해서 `i * 3`이라는 숫자로 가는 경우입니다.
+
+**"선택하지 않는 경우"**는 코드에 명시적으로 `else` 블록으로 존재하는 것이 아닙니다.
+다만, 위 3개의 `if` 문 각각이 독립적이므로, 예를 들어 `i * 3`이 목표값 `y`를 초과한다면(`if i * 3 <= y` 가 거짓), 그 연산은 **자동으로 제외(선택 불가)**되어 실행되지 않습니다.
+
 
 
 
