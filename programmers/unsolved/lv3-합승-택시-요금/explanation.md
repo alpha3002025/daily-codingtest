@@ -23,7 +23,60 @@ $N$이 최대 200이므로 플로이드-워셜($O(N^3)$)이 가능하고 구현�
    - `k=s`인 경우는 합승 없이 처음부터 따로 가는 경우를 포함합니다 (`dist[s][s]=0`).
    - `k=a` 또는 `k=b`인 경우는 한 명의 목적지까지 같이 가고, 나머지 한 명이 더 가는 경우를 포함합니다.
 
-## Python 코드
+
+## Python 코드 (다익스트라(Dijkstra))
+```python
+from collections import defaultdict
+from heapq import heappush, heappop
+from math import inf
+
+def solution(n, s, a, b, fares):
+    graph = defaultdict(list)
+    
+    for src,dest,fare in fares:
+        graph[src-1].append((dest-1, fare))
+        graph[dest-1].append((src-1, fare))
+    
+    
+    distance_from_s = dijkstra(s-1, n, graph)
+    distance_from_a = dijkstra(a-1, n, graph)
+    distance_from_b = dijkstra(b-1, n, graph)
+    
+    
+    best_cost = inf
+    for i in range(n):
+        curr = distance_from_s[i] + distance_from_a[i] + distance_from_b[i]
+        best_cost = min(curr, best_cost)
+    
+    return best_cost
+
+
+def dijkstra(start, size, graph):
+    distance = [inf] * size
+    distance[start] = 0
+    
+    queue = []
+    heappush(queue, (0, start)) ## (cost, node)
+    
+    while queue:
+        curr_cost, curr_node = heappop(queue)
+        
+        # s -> curr_node < s -> k -> curr_node (미리 구해놓은 답이 이미 최적이면 skip)
+        if distance[curr_node] < curr_cost:
+            continue
+            
+        for next_node, next_cost in graph[curr_node]:
+            another_route_cost = distance[curr_node] + next_cost
+            
+            if another_route_cost < distance[next_node]:
+                distance[next_node] = another_route_cost
+                heappush(queue, (another_route_cost, next_node))
+    return distance    
+```
+<br/>
+
+
+## Python 코드 (플로이드 워셜)
 
 ```python
 def solution(n, s, a, b, fares):
