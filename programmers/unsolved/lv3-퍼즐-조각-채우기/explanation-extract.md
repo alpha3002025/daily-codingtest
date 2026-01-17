@@ -39,7 +39,6 @@ def solution(game_board, table):
     # 2. 테이블에서 퍼즐 조각(1) 추출
     puzzle_pieces = extract_shapes(table, 1)
     
-    # 각 빈 공간에 대해 맞는 퍼즐 조각 찾기
     visited_pieces = [False] * len(puzzle_pieces)
     
     for space in empty_spaces:
@@ -66,6 +65,7 @@ def solution(game_board, table):
                 break
                 
     return answer
+
 
 def extract_shapes(board, target_value):
     N = len(board)
@@ -94,6 +94,7 @@ def extract_shapes(board, target_value):
                 shapes.append(shape)
     return shapes
 
+
 def normalize(shape):
     # 좌표 정렬 (행 우선, 열 차선)
     shape.sort()
@@ -104,6 +105,7 @@ def normalize(shape):
     for r, c in shape:
         normalized.append((r - min_r, c - min_c))
     return normalized
+
 
 def rotate(shape):
     # 90도 회전 변환: (r, c) -> (c, -r)
